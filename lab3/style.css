@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap');
+
+body {
+    margin: 0; overflow: hidden; background: #fcfbf8; color: #594f3e; font-family: 'Nunito', sans-serif;
+}
+
+#canvas { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; padding: 2.5rem;
+    pointer-events: none; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start;
+}
+
+.title-area h1 {
+    margin: 0; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px;
+    color: #c8b387; text-shadow: 3px 3px 0px #b09c73; animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.title-area p {
+    margin: 1rem 0 0 0; color: #75674f; font-weight: 800;
+    background: #f6f4eb; padding: 0.75rem 1.25rem; border-radius: 16px;
+    border: 3px solid #e0d8c0; box-shadow: 4px 4px 0px #e0d8c0;
+}
+
+.back-link {
+    color: #b09c73; text-decoration: none; font-weight: 800; pointer-events: auto;
+    background: white; padding: 0.75rem 1.5rem; border-radius: 99px;
+    border: 3px solid #e0d8c0; box-shadow: 4px 4px 0px #e0d8c0; transition: 0.1s;
+}
+
+.back-link:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #e0d8c0; }
+.back-link:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px #e0d8c0; }
