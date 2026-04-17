@@ -3,21 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab2: 照相亭</title>
+    <title>照相亭 | 拍貼機</title>
+    <meta name="description" content="超可愛粉色系照相亭，多樣邊框、貼紙與濾鏡，留下最完美的瞬間！">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="../index.html" class="back-link">← 回到首頁</a>
-    <h1>神奇照相亭 📸</h1>
-    <div class="camera-box">
-        <div class="viewfinder" id="viewfinder">
-            <span>[攝影機畫面區]</span>
-            <span style="font-size: 0.9rem; margin-top: 0.5rem;">(接下來可透過 JavaScript getUserMedia 獲取真實畫面)</span>
+    <a href="../index.html" class="back-link">← 回主頁</a>
+
+    <h1>照相亭 ✨</h1>
+
+    <main class="main-container">
+        <!-- Photo Booth View -->
+        <section class="booth-section">
+            <div class="controls-top">
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="single">單張</button>
+                    <button class="mode-btn" data-mode="strip">三連拍</button>
+                </div>
+                <div class="orientation-toggle">
+                    <button class="orientation-btn active" data-orient="landscape">橫式 (4:3)</button>
+                    <button class="orientation-btn" data-orient="portrait">直式 (3:4)</button>
+                </div>
+            </div>
+
+            <div class="viewfinder-wrapper landscape" id="viewfinder">
+                <video id="camera-feed" autoplay playsinline></video>
+                <div id="frame-overlay"></div>
+                <div id="sticker-container"></div>
+                <div id="countdown-display"></div>
+                <div id="flash-overlay" class="flash"></div>
+            </div>
+            
+            <div class="controls">
+                <button id="capture-btn" class="btn btn-capture">
+                    <span>📸</span> 拍一張！
+                </button>
+                <button id="download-last-btn" class="btn btn-secondary">
+                    <span>💾</span> 下載這張
+                </button>
+                <button id="clear-gallery-btn" class="btn btn-secondary">
+                    <span>🧹</span> 清除相簿
+                </button>
+                <button id="clear-stickers-btn" class="btn btn-secondary">
+                    <span>✨</span> 清除貼紙
+                </button>
+            </div>
+        </section>
+
+        <!-- Sidebar: Filters, Frames & Stickers -->
+        <aside class="sidebar">
+            <!-- Stickers (NEW) -->
+            <section class="sidebar-section">
+                <h2 class="section-title">🎨 可愛貼紙</h2>
+                <div class="option-grid stickers-grid" id="sticker-selector">
+                    <button class="sticker-opt" data-sticker="❤️">❤️</button>
+                    <button class="sticker-opt" data-sticker="⭐">⭐</button>
+                    <button class="sticker-opt" data-sticker="🌸">🌸</button>
+                    <button class="sticker-opt" data-sticker="🐱">🐱</button>
+                    <button class="sticker-opt" data-sticker="🍓">🍓</button>
+                    <button class="sticker-opt" data-sticker="🎀">🎀</button>
+                    <button class="sticker-opt" data-sticker="🧸">🧸</button>
+                    <button class="sticker-opt" data-sticker="✨">✨</button>
+                    <button class="sticker-opt" data-sticker="🌈">🌈</button>
+                    <button class="sticker-opt" data-sticker="🍦">🍦</button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">點擊貼紙加入，拖動可改變位置！</p>
+            </section>
+
+            <!-- Strip Background Color (NEW) -->
+            <section class="sidebar-section">
+                <h2 class="section-title">🎨 拼圖底色</h2>
+                <div class="option-grid color-grid" id="color-selector">
+                    <button class="color-opt active" data-color="#ffffff" style="background: #ffffff; border: 2px solid #ddd;"></button>
+                    <button class="color-opt" data-color="#000000" style="background: #000000;"></button>
+                    <button class="color-opt" data-color="#ffccd5" style="background: #ffccd5;"></button>
+                    <button class="color-opt" data-color="#d8e2dc" style="background: #d8e2dc;"></button>
+                    <button class="color-opt" data-color="#9dbebb" style="background: #9dbebb;"></button>
+                    <button class="color-opt" data-color="#ece4db" style="background: #ece4db;"></button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">選擇三連拍拼圖的背景顏色</p>
+            </section>
+
+            <!-- Filters -->
+            <section class="sidebar-section">
+                <h2 class="section-title">✨ 魔法濾鏡</h2>
+                <div class="option-grid" id="filter-container">
+                    <button class="filter-option active" data-filter="none">原圖</button>
+                    <button class="filter-option" data-filter="brightness(1.2) contrast(1.1) saturate(1.3)">粉嫩清新</button>
+                    <button class="filter-option" data-filter="contrast(1.4) brightness(0.9) hue-rotate(-20deg)">日系唯美</button>
+                    <button class="filter-option" data-filter="grayscale(100%)">經典黑白</button>
+                    <button class="filter-option" data-filter="sepia(100%)">復古濾鏡</button>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section">
+        <h2 class="section-title">🍓 我的相簿</h2>
+        <div class="gallery-grid" id="gallery">
+            <!-- Captured photos will appear here -->
         </div>
-    </div>
-    <div class="actions">
-        <button class="btn btn-capture" onclick="alert('拍攝功能準備中！')">📷 拍一張</button>
-        <button class="btn btn-filters" onclick="alert('濾鏡切換準備中！')">✨ 魔法濾鏡</button>
-    </div>
+    </section>
+
+    <!-- Hidden canvas for photo processing -->
+    <canvas id="photo-canvas" style="display: none;"></canvas>
+
+    <script src="script.js"></script>
 </body>
 </html>
