@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <meta name="description" content="超可愛粉色系照相亭，多樣邊框、貼紙與濾鏡，留下最完美的瞬間！">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <a href="../index.html" class="back-link">← 回主頁</a>
 
@@ -33,7 +35,7 @@
                 <div id="countdown-display"></div>
                 <div id="flash-overlay" class="flash"></div>
             </div>
-            
+
             <div class="controls">
                 <button id="capture-btn" class="btn btn-capture">
                     <span>📸</span> 拍一張！
@@ -72,14 +74,42 @@
 
             <!-- Strip Background Color (NEW) -->
             <section class="sidebar-section">
-                <h2 class="section-title">🎨 拼圖底色</h2>
+                <h2 class="section-title">🎨 邊框底色</h2>
                 <div class="option-grid color-grid" id="color-selector">
-                    <button class="color-opt active" data-color="#ffffff" style="background: #ffffff; border: 2px solid #ddd;"></button>
-                    <button class="color-opt" data-color="#000000" style="background: #000000;"></button>
-                    <button class="color-opt" data-color="#ffccd5" style="background: #ffccd5;"></button>
-                    <button class="color-opt" data-color="#d8e2dc" style="background: #d8e2dc;"></button>
-                    <button class="color-opt" data-color="#9dbebb" style="background: #9dbebb;"></button>
-                    <button class="color-opt" data-color="#ece4db" style="background: #ece4db;"></button>
+                    <!-- Basic -->
+                    <button class="color-opt active" data-color="#ffffff"
+                        style="background: #ffffff; border: 2px solid #ddd;" title="簡約白"></button>
+                    <button class="color-opt" data-color="#000000" style="background: #000000;" title="經典黑"></button>
+
+                    <!-- System 1: Sweet & Dreamy -->
+                    <button class="color-opt" data-color="#ffb3ba" style="background: #ffb3ba;" title="粉櫻"></button>
+                    <button class="color-opt" data-color="#bae1ff" style="background: #bae1ff;" title="水藍"></button>
+                    <button class="color-opt" data-color="#e0baff" style="background: #e0baff;" title="薰衣草"></button>
+                    <button class="color-opt" data-color="#ffffba" style="background: #ffffba;" title="嫩黃"></button>
+
+                    <!-- System 2: Deep & Elegant -->
+                    <button class="color-opt" data-color="#1a2e35" style="background: #a4b0b4;" title="午夜綠"></button>
+                    <button class="color-opt" data-color="#2d1a35" style="background: #d77aff;" title="深邃紫"></button>
+                    <button class="color-opt" data-color="#351a1a" style="background: #d05858;" title="酒紅"></button>
+                    <button class="color-opt" data-color="#1a1c35" style="background: #d261a5;" title="海軍藍"></button>
+
+                    <!-- System 3: Vibrant & Bold -->
+                    <button class="color-opt" data-color="#ff0054" style="background: #e8c3d0;" title="亮麗紅"></button>
+                    <button class="color-opt" data-color="#00f5d4" style="background: #bdefe8;" title="電光綠"></button>
+                    <button class="color-opt" data-color="#fee440" style="background: #fff8cd;" title="活力黃"></button>
+                    <button class="color-opt" data-color="#00bbf9" style="background: #03bbf8;" title="明亮藍"></button>
+
+                    <!-- System 4: Natural & Earthy (Rich) -->
+                    <button class="color-opt" data-color="#606c38" style="background: #a8ffbc;" title="森林綠"></button>
+                    <button class="color-opt" data-color="#bc6c25" style="background: #bc6c25;" title="焦糖褐"></button>
+                    <button class="color-opt" data-color="#dda15e" style="background: #fabd78;" title="沙礫金"></button>
+                    <button class="color-opt" data-color="#fefae0" style="background: #fefae0;" title="香草奶昔"></button>
+
+                    <!-- System 5: Artistic & Unique -->
+                    <button class="color-opt" data-color="#fb5607" style="background: #fb5607;" title="烈焰橘"></button>
+                    <button class="color-opt" data-color="#ff006e" style="background: #ff006e;" title="迷幻桃"></button>
+                    <button class="color-opt" data-color="#8338ec" style="background: #9249f7;" title="皇家紫"></button>
+                    <button class="color-opt" data-color="#3a86ff" style="background: #c7dbfc;" title="科技藍"></button>
                 </div>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">選擇三連拍拼圖的背景顏色</p>
             </section>
@@ -89,8 +119,10 @@
                 <h2 class="section-title">✨ 魔法濾鏡</h2>
                 <div class="option-grid" id="filter-container">
                     <button class="filter-option active" data-filter="none">原圖</button>
-                    <button class="filter-option" data-filter="brightness(1.2) contrast(1.1) saturate(1.3)">粉嫩清新</button>
-                    <button class="filter-option" data-filter="contrast(1.4) brightness(0.9) hue-rotate(-20deg)">日系唯美</button>
+                    <button class="filter-option"
+                        data-filter="brightness(1.2) contrast(1.1) saturate(1.3)">粉嫩清新</button>
+                    <button class="filter-option"
+                        data-filter="contrast(1.4) brightness(0.9) hue-rotate(-20deg)">日系唯美</button>
                     <button class="filter-option" data-filter="grayscale(100%)">經典黑白</button>
                     <button class="filter-option" data-filter="sepia(100%)">復古濾鏡</button>
                 </div>
@@ -100,7 +132,7 @@
 
     <!-- Gallery Section -->
     <section class="gallery-section">
-        <h2 class="section-title">🍓 我的相簿</h2>
+        <h2 class="section-title">(´-ω-｀)我的相簿</h2>
         <div class="gallery-grid" id="gallery">
             <!-- Captured photos will appear here -->
         </div>
@@ -111,4 +143,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

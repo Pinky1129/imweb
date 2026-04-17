@@ -22,12 +22,82 @@
             </a>
             <a href="lab3/index.html" class="card">
                 <span class="tag" style="background:#10b981">Lab 3</span>
-                <h2>動態畫布</h2>
-                <p>發揮創意的自由創作空間，點擊滑鼠繪製專屬你的星空。</p>
+                <h2>小遊戲大廳</h2>
+                <p>包含打地鼠、翻牌記憶，以及全新的全螢幕 3D 萌萌冒險！✨</p>
             </a>
         </div>
     </div>
     <div class="peeking-bear" title="拉拉熊跟你問好！">🐻</div>
     <div class="bear-message">哈囉！來看偶的作品吧～ 🍯</div>
+    <script>
+        // Sound effect using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playClickSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const now = audioCtx.currentTime;
+            
+            // "Thock" part (low frequency resonance)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(120, now);
+            osc1.frequency.exponentialRampToValueAtTime(80, now + 0.2); // Slight downward slide
+            
+            gain1.gain.setValueAtTime(0.15, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            
+            // "Click" part (transient)
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(900, now);
+            
+            gain2.gain.setValueAtTime(0.08, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            
+            osc1.start(now);
+            osc1.stop(now + 0.25);
+            osc2.start(now);
+            osc2.stop(now + 0.08);
+        }
+
+        // Mouse trail effect
+        let lastTime = 0;
+        document.addEventListener('mousemove', (e) => {
+            const now = Date.now();
+            if (now - lastTime < 50) return; // Throttle to every 50ms
+            lastTime = now;
+
+            const sparkle = document.createElement('div');
+            sparkle.className = 'mouse-trail';
+            sparkle.style.left = e.pageX + 'px';
+            sparkle.style.top = e.pageY + 'px';
+            
+            const size = Math.random() * 15 + 8;
+            sparkle.style.width = size + 'px';
+            sparkle.style.height = size + 'px';
+            
+            const emojis = ['✨', '⭐', '🐾', '🍯'];
+            sparkle.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 800);
+        });
+
+        // Add sound to cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                playClickSound();
+            });
+        });
+    </script>
 </body>
 </html>

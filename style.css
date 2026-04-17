@@ -128,3 +128,25 @@ h1 {
     opacity: 1;
     transform: translateY(0);
 }
+
+.mouse-trail {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.2rem;
+    z-index: 9999;
+    animation: fadeAndUp 1s ease-out forwards;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes fadeAndUp {
+    0% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(0.4);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -120%) scale(1.2) rotate(15deg);
+    }
+}
