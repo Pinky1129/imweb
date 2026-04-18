@@ -478,3 +478,10 @@ body {
     margin-bottom: 0.5rem;
     font-weight: 800;
 }
+/* 讓自訂的圖示大小跟原本的 Emoji 一樣大 */
+.menu-card .menu-icon {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.1));
+}

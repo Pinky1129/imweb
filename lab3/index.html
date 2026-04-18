@@ -38,17 +38,18 @@
                         <p>考驗反應速度</p>
                     </div>
                 </button>
-                <button class="menu-card" data-game="memory">
-                    <span class="emoji">🃏</span>
+                <button class="menu-card" data-game="basketball">
+                    <span class="emoji">🏀</span>
                     <div class="info">
-                        <h3>翻牌記憶</h3>
-                        <p>考驗短期記憶</p>
+                        <h3>雞哥投籃</h3>
+                        <p>真香！看準時機投球</p>
                     </div>
                 </button>
                 <a href="../lab4/index.html" class="menu-card" style="text-decoration: none; color: inherit;">
                     <span class="emoji">🐥</span>
                     <div class="info">
-                        <h3>3D 萌萌冒險</h3>
+                        <h3>請遵守交通
+                        </h3>
                         <p>全螢幕立體大挑戰！✨</p>
                     </div>
                 </a>
@@ -78,23 +79,26 @@
             </footer>
         </div>
 
-        <!-- Memory Match View -->
-        <div id="memory-game" class="view">
+        <!-- Basketball Game View (Replaced Memory Match) -->
+        <div id="basketball-game" class="view">
             <header class="game-header">
                 <button class="btn-lobby-back">← 選單</button>
                 <div class="stat-card">
-                    <span class="label">配對</span>
-                    <span id="memory-matches" class="value">0</span>/8
+                    <span class="label">進球數</span>
+                    <span id="basket-score" class="value">0</span>
                 </div>
                 <div class="timer-card">
-                    <div id="memory-timer-bar" class="timer-bar"></div>
-                    <span id="memory-time-left" class="value">45</span>
+                    <div id="basket-timer-bar" class="timer-bar"></div>
+                    <span id="basket-time-left" class="value">15</span>
                     <span class="label">秒</span>
                 </div>
             </header>
-            <main class="game-grid memory-grid" id="memory-grid"></main>
+            <main class="game-body basket-container" id="basket-3d-container">
+                <!-- 3D Basketball Arena will be injected here -->
+                <div id="basket-hint" class="hint">點擊畫面投籃！🏀</div>
+            </main>
             <footer class="game-footer">
-                <button id="memory-restart-btn" class="start-btn">開始/重新開始</button>
+                <button id="basket-start-btn" class="start-btn">開始挑戰</button>
             </footer>
         </div>
     </div>

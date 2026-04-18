@@ -29,6 +29,13 @@
             pointer-events: auto;
         }
         .char-btn { padding: 5px 15px; font-size: 0.9rem; }
+        /* 設定選角圖片的大小 */
+        .char-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -45,19 +52,19 @@
 
     <!-- Start Screen -->
     <div id="start-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,209,220,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1000;">
-        <h1 style="color:#ff8b94; font-size:3rem; margin-bottom:10px;">萌萌大冒險 🐥</h1>
-        <p style="color:#666; font-size:1.2rem; margin-bottom:30px;">選擇一個勇者出發過馬路吧！</p>
+        <h1 style="color:#ff8b94; font-size:3rem; margin-bottom:10px;">過馬路挑戰</h1>
+        <p style="color:#666; font-size:1.2rem; margin-bottom:30px;">大家都要看路，小心過馬路喔！</p>
         <div style="display:flex; gap:20px;">
             <div class="char-card" onclick="startGame('chiikawa')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <div style="font-size:3rem;">🐥</div>
+                <img src="../lab3/chiikawa.jpg" alt="吉伊" class="char-icon">
                 <div style="font-weight:bold; color:#ff8b94;">吉伊</div>
             </div>
             <div class="char-card" onclick="startGame('hachiware')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <div style="font-size:3rem;">🐱</div>
+                <img src="../lab3/Hachiware.jpg" alt="小八" class="char-icon">
                 <div style="font-weight:bold; color:#4fc3f7;">小八</div>
             </div>
             <div class="char-card" onclick="startGame('usagi')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <div style="font-size:3rem;">🐰</div>
+                <img src="../lab3/Usagi.jpg" alt="烏薩奇" class="char-icon">
                 <div style="font-weight:bold; color:#fdd835;">烏薩奇</div>
             </div>
         </div>
@@ -83,6 +90,24 @@
         let gameActive = false; // Start inactive
         let currentType = 'chiikawa'; 
         let isJumping = false; 
+        // 載入吉伊的音效
+        let chiikawaJumpSound = new Audio('../lab3/chiikawa.mp3');
+        chiikawaJumpSound.playbackRate = 1.5;
+        let chiikawaCrashSound = new Audio('../lab3/chiikawa-crash.mp3');
+        chiikawaCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+
+        // 載入小八的音效
+        let hachiJumpSound = new Audio('../lab3/hachi.mp3'); 
+        hachiJumpSound.playbackRate = 1.5;
+        let hachiCrashSound = new Audio('../lab3/hachi-crash.mp3');
+        hachiCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+
+        // 載入烏薩奇的音效
+        let usagiJumpSound = new Audio('../lab3/usagi.mp3');
+        usagiJumpSound.playbackRate = 1.5;
+        let usagiCrashSound = new Audio('../lab3/usagi-crash.mp3');
+        usagiCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+
 
         function init() {
             scene = new THREE.Scene();
@@ -132,6 +157,11 @@
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('ui').style.display = 'block';
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // 一開始就先產生 4 輛車，讓畫面不空曠
+            for(let i=0; i<4; i++) {
+                spawnCar(i, (i % 2 === 0 ? 1 : -1));
+            }
         }
 
         function switchCharacter(type) {
@@ -364,7 +394,7 @@
             const laneIdx = (manualLane !== undefined) ? manualLane : Math.floor(Math.random() * 4);
             const direction = (manualDir !== undefined) ? manualDir : (laneIdx % 2 === 0 ? 1 : -1);
             const spawnZ = 0 - (laneIdx * 4);
-            const spawnX = direction === 1 ? -12 : 12;
+            const spawnX = direction === 1 ? -11 : 11;
 
             // Check for overlap (No car in same lane within 4 units)
             const overlap = cars.some(car => {
@@ -407,8 +437,10 @@
                 carGroup.add(wheel);
             });
 
-            carGroup.position.set(direction === 1 ? -12 : 12, 0, 0 - (laneIdx * 4));
-            carGroup.userData = { speed: Math.random() * 0.1 + 0.1, direction: direction };
+            carGroup.position.set(direction === 1 ? -11 : 11, 0, 0 - (laneIdx * 4));
+            // 讓速度隨分數增加：基礎速度 * (1 + 分數 * 0.1)
+            const speedBoost = 1 + (score * 0.1);
+            carGroup.userData = { speed: (Math.random() * 0.1 + 0.1) * speedBoost, direction: direction };
             
             scene.add(carGroup);
             cars.push(carGroup);
@@ -417,7 +449,17 @@
         function jump() {
             if(!gameActive || isJumping) return;
             isJumping = true;
-            playSound('jump');
+
+            // 判斷不同角色的音效
+            if (currentType === 'chiikawa') {
+                if (chiikawaJumpSound.paused || chiikawaJumpSound.ended) chiikawaJumpSound.play();
+            } else if (currentType === 'hachiware') {
+                if (hachiJumpSound.paused || hachiJumpSound.ended) hachiJumpSound.play();
+            } else if (currentType === 'usagi') {
+                if (usagiJumpSound.paused || usagiJumpSound.ended) usagiJumpSound.play();
+            } else {
+                playSound('jump');
+            }
             
             // Animation for jump (Bounce)
             const jumpDuration = 200;
@@ -470,8 +512,8 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Background Car Spawning (Always running)
-            if(Math.random() < 0.02) spawnCarBackground();
+            // Background Car Spawning (提高出車機率：從 0.02 改成 0.04)
+            if(Math.random() < 0.04) spawnCarBackground();
 
             // Move cars
             for(let i = cars.length - 1; i >= 0; i--) {
@@ -483,7 +525,21 @@
                     const dist = car.position.distanceTo(chiikawa.position);
                     const threshold = 1.3; 
                     if(dist < threshold) {
-                        playSound('crash');
+                        // 判斷不同角色的被撞音效
+                        if (currentType === 'chiikawa') {
+                            chiikawaCrashSound.currentTime = 0;
+                            chiikawaCrashSound.play();
+                        } else if (currentType === 'hachiware') {
+                            hachiJumpSound.pause(); // 被撞時立刻停止跳躍音效
+                            hachiJumpSound.currentTime = 0;
+                            hachiCrashSound.currentTime = 0;
+                            hachiCrashSound.play();
+                        } else if (currentType === 'usagi') {
+                            usagiCrashSound.currentTime = 0;
+                            usagiCrashSound.play();
+                        } else {
+                            playSound('crash');
+                        }
                         gameActive = false;
                         document.getElementById('modal-title').innerText = "哎呀！被車撞到了... 🥺";
                         document.getElementById('msg').style.display = 'block';
@@ -491,7 +547,9 @@
                 }
 
                 // Remove if out of bounds
-                if(Math.abs(car.position.x) > 25) {
+                // 當車子開到對面的綠色樹籬 (超過 11 單位) 就移除
+                if((car.userData.direction === 1 && car.position.x > 11) || 
+                   (car.userData.direction === -1 && car.position.x < -11)) {
                     scene.remove(car);
                     cars.splice(i, 1);
                 }
@@ -511,7 +569,7 @@
             const laneIdx = Math.floor(Math.random() * 4);
             const direction = laneIdx % 2 === 0 ? 1 : -1;
             const spawnZ = 0 - (laneIdx * 4);
-            const spawnX = direction === 1 ? -12 : 12;
+            const spawnX = direction === 1 ? -11 : 11;
             const overlap = cars.some(car => car.position.z === spawnZ && Math.abs(car.position.x - spawnX) < 5);
             if(!overlap) spawnCar(laneIdx, direction);
         }
