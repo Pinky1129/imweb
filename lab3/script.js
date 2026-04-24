@@ -219,6 +219,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 eyeR.userData = { isEye: true, isLeft: false };
                 moleGroup.add(eyeR);
                 
+                // --- 隨機裝飾 (NEW) ---
+                const accessoryType = Math.floor(Math.random() * 4); // 0: 無, 1: 蝴蝶結, 2: 鬍子, 3: 頭髮
+                if (accessoryType === 1) {
+                    // 緞帶蝴蝶結 🎀 (依照圖片設計)
+                    const bowGroup = new THREE.Group();
+                    const knotGeo = new THREE.SphereGeometry(0.1, 16, 16);
+                    const wingGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.05, 3); 
+                    const tailGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.04, 3);
+                    const bowMat = new THREE.MeshLambertMaterial({ color: 0xff8da1 }); // 圖片中的緞帶粉色
+                    
+                    const knot = new THREE.Mesh(knotGeo, bowMat);
+                    
+                    // 兩側翅膀
+                    const leftWing = new THREE.Mesh(wingGeo, bowMat);
+                    leftWing.rotation.set(Math.PI/2, Math.PI/2, 0);
+                    leftWing.position.x = -0.18;
+                    const rightWing = leftWing.clone();
+                    rightWing.rotation.y = -Math.PI/2;
+                    rightWing.position.x = 0.18;
+                    
+                    // 下垂的緞帶 (Tails)
+                    const leftTail = new THREE.Mesh(tailGeo, bowMat);
+                    leftTail.rotation.set(Math.PI/2, 2.2, 0);
+                    leftTail.position.set(-0.15, -0.25, 0.05);
+                    const rightTail = leftTail.clone();
+                    rightTail.rotation.y = -2.2;
+                    rightTail.position.x = 0.15;
+                    
+                    bowGroup.add(knot); bowGroup.add(leftWing); bowGroup.add(rightWing);
+                    bowGroup.add(leftTail); bowGroup.add(rightTail);
+                    
+                    bowGroup.position.set(0.4, 0.85, 0.4); bowGroup.rotation.z = 0.4;
+                    moleGroup.add(bowGroup);
+                } else if (accessoryType === 2) {
+                    // 鬍子 👨🏻‍🦱
+                    const musGroup = new THREE.Group();
+                    const musGeo = new THREE.TorusGeometry(0.15, 0.04, 8, 12, Math.PI);
+                    const musMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+                    const mLeft = new THREE.Mesh(musGeo, musMat);
+                    mLeft.position.x = -0.15;
+                    const mRight = new THREE.Mesh(musGeo, musMat);
+                    mRight.position.x = 0.15;
+                    musGroup.add(mLeft); musGroup.add(mRight);
+                    musGroup.position.set(0, 0.05, 0.85);
+                    moleGroup.add(musGroup);
+                } else if (accessoryType === 3) {
+                    // 頭髮 💇‍♂️
+                    const hairGeo = new THREE.ConeGeometry(0.1, 0.4, 8);
+                    const hairMat = new THREE.MeshLambertMaterial({ color: 0x4e342e });
+                    for(let j=0; j<3; j++) {
+                        const hair = new THREE.Mesh(hairGeo, hairMat);
+                        hair.position.set((j-1)*0.15, 1.0, 0);
+                        hair.rotation.z = (j-1)*0.3;
+                        moleGroup.add(hair);
+                    }
+                }
+
                 moleGroup.userData = { id: i, state: 'down', targetY: -2 };
                 moleScene.add(moleGroup);
                 moleHoles3D.push(moleGroup);
@@ -458,7 +515,13 @@ document.addEventListener('DOMContentLoaded', () => {
             powerBarWrap.id = 'power-bar-wrap';
             const powerBar = document.createElement('div');
             powerBar.id = 'power-bar';
-            powerBar.style.cssText = 'height:100%;width:0%;background:linear-gradient(90deg,#4caf50,#ff5252);border-radius:8px;transition:width 0.05s;';
+            powerBar.style.cssText = 'height:100%;width:0%;background:linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);border-radius:8px;transition:width 0.05s;position:relative;';
+            
+            const chicken = document.createElement('div');
+            chicken.innerText = '🐔';
+            chicken.style.cssText = 'position:absolute;right:-15px;top:50%;transform:translateY(-50%);font-size:24px;filter:drop-shadow(2px 2px 2px rgba(0,0,0,0.3));';
+            powerBar.appendChild(chicken);
+            
             powerBarWrap.appendChild(powerBar);
             container.style.position = 'relative';
             container.appendChild(powerBarWrap);
@@ -579,6 +642,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('power-bar').style.width = '0%';
                 throwBall(charged);
             });
+
+            // 手機觸控支援
+            container.addEventListener('touchstart', (e) => {
+                if (basketTimeUp) return;
+                e.preventDefault(); // 防止滾動
+                chargeStart = performance.now(); isCharging = true;
+                document.getElementById('power-bar-wrap').style.display = 'block';
+            }, { passive: false });
+
+            container.addEventListener('touchend', (e) => {
+                if (!isCharging || basketTimeUp) return;
+                e.preventDefault();
+                isCharging = false;
+                const charged = Math.min((performance.now() - chargeStart) / 1000, 1);
+                document.getElementById('power-bar-wrap').style.display = 'none';
+                document.getElementById('power-bar').style.width = '0%';
+                throwBall(charged);
+            }, { passive: false });
             animateBasket();
         }
         resetBasket();

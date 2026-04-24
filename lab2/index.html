@@ -30,6 +30,10 @@
 
             <div class="viewfinder-wrapper landscape" id="viewfinder">
                 <video id="camera-feed" autoplay playsinline></video>
+                <!-- Drawing Canvas Layer -->
+                <canvas id="drawing-canvas"></canvas>
+                <!-- Brush Preview Cursor -->
+                <div id="brush-cursor"></div>
                 <div id="frame-overlay"></div>
                 <div id="sticker-container"></div>
                 <div id="countdown-display"></div>
@@ -40,21 +44,46 @@
                 <button id="capture-btn" class="btn btn-capture">
                     <span>📸</span> 拍一張！
                 </button>
+                <button id="clear-draw-btn" class="btn btn-secondary">
+                    <span>🎨</span> 清除塗鴉
+                </button>
+                <button id="clear-stickers-btn" class="btn btn-secondary">
+                    <span>✨</span> 清除貼紙
+                </button>
                 <button id="download-last-btn" class="btn btn-secondary">
                     <span>💾</span> 下載這張
                 </button>
                 <button id="clear-gallery-btn" class="btn btn-secondary">
                     <span>🧹</span> 清除相簿
                 </button>
-                <button id="clear-stickers-btn" class="btn btn-secondary">
-                    <span>✨</span> 清除貼紙
-                </button>
             </div>
         </section>
 
         <!-- Sidebar: Filters, Frames & Stickers -->
         <aside class="sidebar">
-            <!-- Stickers (NEW) -->
+            <!-- Drawing Brush (NEW) -->
+            <section class="sidebar-section">
+                <h2 class="section-title">✍️ 手寫畫筆</h2>
+                <div class="brush-tools">
+                    <div class="color-grid" id="brush-color-selector">
+                        <button class="color-opt active" data-color="#ff0000" style="background: #ff0000;"></button>
+                        <button class="color-opt" data-color="#ff7f00" style="background: #ff7f00;"></button>
+                        <button class="color-opt" data-color="#ffff00" style="background: #ffff00;"></button>
+                        <button class="color-opt" data-color="#00ff00" style="background: #00ff00;"></button>
+                        <button class="color-opt" data-color="#0000ff" style="background: #0000ff;"></button>
+                        <button class="color-opt" data-color="#8b00ff" style="background: #8b00ff;"></button>
+                        <button class="color-opt" data-color="#ff69b4" style="background: #ff69b4;"></button>
+                        <button class="color-opt" data-color="#ffffff" style="background: #ffffff; border: 1px solid #ccc;"></button>
+                        <button class="color-opt" data-color="#000000" style="background: #000000;"></button>
+                    </div>
+                    <div class="brush-size-container">
+                        <span style="font-size: 0.8rem;">粗細：</span>
+                        <input type="range" id="brush-size" min="1" max="20" value="5">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stickers -->
             <section class="sidebar-section">
                 <h2 class="section-title">🎨 可愛貼紙</h2>
                 <div class="option-grid stickers-grid" id="sticker-selector">

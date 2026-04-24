@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewfinder = document.getElementById('viewfinder');
     const stickerContainer = document.getElementById('sticker-container');
     const countdownDisplay = document.getElementById('countdown-display');
+    const drawingCanvas = document.getElementById('drawing-canvas');
+    const drawCtx = drawingCanvas.getContext('2d');
+    const brushColorOpts = document.querySelectorAll('#brush-color-selector .color-opt');
+    const brushSizeInput = document.getElementById('brush-size');
+    const clearDrawBtn = document.getElementById('clear-draw-btn');
+    const brushCursor = document.getElementById('brush-cursor');
     
     const filterOptions = document.querySelectorAll('.filter-option');
     const orientationBtns = document.querySelectorAll('.orientation-btn');
@@ -21,11 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentOrientation = 'landscape';
     let currentMode = 'single';
     let currentStripColor = '#ffffff';
+    let currentBrushColor = '#ff0000';
+    let currentBrushSize = 5;
     let stickers = [];
     let lastPhotoDataUrl = null;
     let isCapturing = false;
+    let isDrawing = false;
 
-    // 1. Initialize Camera
+    // 1. Initialize Camera & Drawing Canvas
     async function initCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -33,11 +42,111 @@ document.addEventListener('DOMContentLoaded', () => {
                 audio: false 
             });
             video.srcObject = stream;
+            resizeDrawingCanvas();
         } catch (err) {
             console.error("Camera error: ", err);
             alert("無法存取攝影機！");
         }
     }
+
+    function resizeDrawingCanvas() {
+        const rect = viewfinder.getBoundingClientRect();
+        drawingCanvas.width = rect.width;
+        drawingCanvas.height = rect.height;
+        // Restore context settings after resize
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+    }
+
+    window.addEventListener('resize', resizeDrawingCanvas);
+
+    // Drawing Logic
+    function updateBrushCursor(e) {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const rect = viewfinder.getBoundingClientRect();
+        
+        // Only show if inside viewfinder
+        if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+            brushCursor.style.display = 'block';
+            brushCursor.style.left = `${clientX - rect.left}px`;
+            brushCursor.style.top = `${clientY - rect.top}px`;
+            brushCursor.style.width = `${currentBrushSize}px`;
+            brushCursor.style.height = `${currentBrushSize}px`;
+            brushCursor.style.backgroundColor = currentBrushColor;
+        } else {
+            brushCursor.style.display = 'none';
+        }
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getMousePos(e);
+        drawCtx.beginPath();
+        drawCtx.strokeStyle = currentBrushColor;
+        drawCtx.lineWidth = currentBrushSize;
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.moveTo(pos.x, pos.y);
+        // Draw a small dot immediately on click
+        drawCtx.lineTo(pos.x, pos.y);
+        drawCtx.stroke();
+        updateBrushCursor(e);
+    }
+
+    function draw(e) {
+        updateBrushCursor(e);
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        drawCtx.strokeStyle = currentBrushColor;
+        drawCtx.lineWidth = currentBrushSize;
+        drawCtx.lineTo(pos.x, pos.y);
+        drawCtx.stroke();
+        e.preventDefault();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    function getMousePos(e) {
+        const rect = drawingCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // Calculate the scale between the canvas internal size and display size
+        const scaleX = drawingCanvas.width / rect.width;
+        const scaleY = drawingCanvas.height / rect.height;
+        
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    drawingCanvas.addEventListener('mousedown', startDrawing);
+    drawingCanvas.addEventListener('mousemove', draw);
+    viewfinder.addEventListener('mousemove', updateBrushCursor);
+    viewfinder.addEventListener('mouseleave', () => brushCursor.style.display = 'none');
+    window.addEventListener('mouseup', stopDrawing);
+    
+    drawingCanvas.addEventListener('touchstart', (e) => { startDrawing(e); e.preventDefault(); }, { passive: false });
+    drawingCanvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchend', stopDrawing);
+
+    brushColorOpts.forEach(opt => opt.addEventListener('click', () => {
+        brushColorOpts.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        currentBrushColor = opt.getAttribute('data-color');
+    }));
+
+    brushSizeInput.addEventListener('input', () => {
+        currentBrushSize = brushSizeInput.value;
+    });
+
+    clearDrawBtn.addEventListener('click', () => {
+        drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    });
 
     // 2. Toggles
     orientationBtns.forEach(btn => {
@@ -47,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             currentOrientation = btn.getAttribute('data-orient');
             viewfinder.className = `viewfinder-wrapper ${currentOrientation}`;
+            setTimeout(resizeDrawingCanvas, 100); // Wait for CSS transition
             clearStickers();
         });
     });
@@ -145,6 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else { dW = vW; dH = vW / tA; oX = 0; oY = (vH - dH) / 2; }
         ctx.drawImage(video, oX, oY, dW, dH, 0, 0, w, h);
         ctx.restore();
+
+        // Draw Drawing Canvas
+        ctx.drawImage(drawingCanvas, 0, 0, drawingCanvas.width, drawingCanvas.height, 0, 0, w, h);
 
         // Draw Stickers
         ctx.font = `${w * 0.1}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
