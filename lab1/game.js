@@ -15,6 +15,7 @@ const songData = [
         options: ["IF YOU", "LOSER", "BANG BANG BANG", "BLUE"]
     },
     {
+        title: "50 Feet",
         url: "music/song4.mp3",
         options: ["50 Feet", "Ride", "Or Nah", "Kings & Queens"]
     }
