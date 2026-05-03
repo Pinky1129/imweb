@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     // Navigation
     const lobby = document.getElementById('lobby');
     const moleGameView = document.getElementById('mole-game');
@@ -219,63 +220,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 eyeR.userData = { isEye: true, isLeft: false };
                 moleGroup.add(eyeR);
                 
-                // --- 隨機裝飾 (NEW) ---
-                const accessoryType = Math.floor(Math.random() * 4); // 0: 無, 1: 蝴蝶結, 2: 鬍子, 3: 頭髮
-                if (accessoryType === 1) {
-                    // 緞帶蝴蝶結 🎀 (依照圖片設計)
-                    const bowGroup = new THREE.Group();
-                    const knotGeo = new THREE.SphereGeometry(0.1, 16, 16);
-                    const wingGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.05, 3); 
-                    const tailGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.04, 3);
-                    const bowMat = new THREE.MeshLambertMaterial({ color: 0xff8da1 }); // 圖片中的緞帶粉色
-                    
-                    const knot = new THREE.Mesh(knotGeo, bowMat);
-                    
-                    // 兩側翅膀
-                    const leftWing = new THREE.Mesh(wingGeo, bowMat);
-                    leftWing.rotation.set(Math.PI/2, Math.PI/2, 0);
-                    leftWing.position.x = -0.18;
-                    const rightWing = leftWing.clone();
-                    rightWing.rotation.y = -Math.PI/2;
-                    rightWing.position.x = 0.18;
-                    
-                    // 下垂的緞帶 (Tails)
-                    const leftTail = new THREE.Mesh(tailGeo, bowMat);
-                    leftTail.rotation.set(Math.PI/2, 2.2, 0);
-                    leftTail.position.set(-0.15, -0.25, 0.05);
-                    const rightTail = leftTail.clone();
-                    rightTail.rotation.y = -2.2;
-                    rightTail.position.x = 0.15;
-                    
-                    bowGroup.add(knot); bowGroup.add(leftWing); bowGroup.add(rightWing);
-                    bowGroup.add(leftTail); bowGroup.add(rightTail);
-                    
-                    bowGroup.position.set(0.4, 0.85, 0.4); bowGroup.rotation.z = 0.4;
-                    moleGroup.add(bowGroup);
-                } else if (accessoryType === 2) {
-                    // 鬍子 👨🏻‍🦱
-                    const musGroup = new THREE.Group();
-                    const musGeo = new THREE.TorusGeometry(0.15, 0.04, 8, 12, Math.PI);
-                    const musMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-                    const mLeft = new THREE.Mesh(musGeo, musMat);
-                    mLeft.position.x = -0.15;
-                    const mRight = new THREE.Mesh(musGeo, musMat);
-                    mRight.position.x = 0.15;
-                    musGroup.add(mLeft); musGroup.add(mRight);
-                    musGroup.position.set(0, 0.05, 0.85);
-                    moleGroup.add(musGroup);
-                } else if (accessoryType === 3) {
-                    // 頭髮 💇‍♂️
-                    const hairGeo = new THREE.ConeGeometry(0.1, 0.4, 8);
-                    const hairMat = new THREE.MeshLambertMaterial({ color: 0x4e342e });
-                    for(let j=0; j<3; j++) {
-                        const hair = new THREE.Mesh(hairGeo, hairMat);
-                        hair.position.set((j-1)*0.15, 1.0, 0);
-                        hair.rotation.z = (j-1)*0.3;
-                        moleGroup.add(hair);
-                    }
-                }
+                // --- 鬍鬚 (Like a cat: 3 white whiskers on each side) ---
+                const whiskerMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                const whiskerGeo = new THREE.CylinderGeometry(0.005, 0.005, 1.2); // Longer and thinner
+                for (let j = 0; j < 3; j++) {
+                    const whiskerL = new THREE.Mesh(whiskerGeo, whiskerMat);
+                    whiskerL.rotation.z = Math.PI / 2;
+                    whiskerL.rotation.y = 0.5 + (j - 1) * 0.25;
+                    whiskerL.position.set(0.6, 0.2 + (j - 1) * 0.1, 0.8);
+                    moleGroup.add(whiskerL);
 
+                    const whiskerR = new THREE.Mesh(whiskerGeo, whiskerMat);
+                    whiskerR.rotation.z = Math.PI / 2;
+                    whiskerR.rotation.y = -0.5 - (j - 1) * 0.25;
+                    whiskerR.position.set(-0.6, 0.2 + (j - 1) * 0.1, 0.8);
+                    moleGroup.add(whiskerR);
+                }
+                
                 moleGroup.userData = { id: i, state: 'down', targetY: -2 };
                 moleScene.add(moleGroup);
                 moleHoles3D.push(moleGroup);
@@ -445,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ji-ge Basketball Logic ---
     let basketScene, basketCamera, basketRenderer, hoop, backboard, balls = [], basketScore = 0, basketTimeLeft = 30, basketTimerId, basketTimeUp = true;
-    let hoopDirection = 1, hoopSpeed = 0.05, playerRooster;
+    let hoopDirection = 1, hoopSpeed = 0.1, playerRooster;
     let basketMouse = new THREE.Vector2();
     let chargeStart = null, isCharging = false;
     let lastScoreIdx = -1; // 記錄上次播放的音效索引，避免重複
@@ -705,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ball.position.copy(playerRooster.position);
         ball.position.y += 2;
         
-        const speedY = 0.2 + power * 0.25; // y 向上的力道
+        const speedY = isMobile ? (0.3 + power * 0.4) : (0.2 + power * 0.25);
         
         // 算出從雞哥位置到籃框的向量
         const dx = backboard.position.x - playerRooster.position.x;
@@ -713,11 +674,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const dist = Math.sqrt(dx * dx + dz * dz);
         
         // 依據距離決定平飛的速度
-        const speedXZ = (0.1 + power * 0.15) * (dist / 10);
+        const speedXZ = isMobile ? ((0.15 + power * 0.25) * (dist / 10)) : ((0.1 + power * 0.15) * (dist / 10));
         
         ball.userData = { 
             velocity: new THREE.Vector3((dx / dist) * speedXZ, speedY, (dz / dist) * speedXZ),
-            gravity: -0.012,
+            gravity: isMobile ? -0.02 : -0.012,
             isScored: false,
             hasMissed: false
         };
@@ -731,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!basketTimeUp) {
             // 大世界操控：用鍵盤 WASD 或方向鍵移動雞哥
-            const speed = 0.15;
+            const speed = isMobile ? 0.3 : 0.15;
             if (window.basketKeys.w || window.basketKeys.ArrowUp) playerRooster.position.z -= speed;
             if (window.basketKeys.s || window.basketKeys.ArrowDown) playerRooster.position.z += speed;
             if (window.basketKeys.a || window.basketKeys.ArrowLeft) playerRooster.position.x -= speed;
@@ -836,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof backboard !== 'undefined' && backboard) {
             backboard.position.x = 0;
         }
-        hoopSpeed = 0.05;
+        hoopSpeed = 0.1;
         if (playerRooster) {
             playerRooster.position.set(0, 0, 12);
         }
@@ -872,9 +833,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let cars3D = [], carSpawnerId;
 
     // 自訂過馬路音效
-    const crossingWalkSound = new Audio('crossing_walk.mp3');
-    const crossingCrashSound = new Audio('crossing_crash.mp3');
-    const crossingScoreSound = new Audio('crossing_score.mp3');
+    const crossingWalkSound = new Audio('Chiikawa.mp3');
+    const crossingCrashSound = new Audio('chiikawa-crash.mp3');
+    const crossingScoreSound = new Audio('score2.mp3');
 
     function initCrossing3D() {
         if (!renderer) {
@@ -938,22 +899,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (crossing3DContainer) {
-        crossing3DContainer.addEventListener('mousedown', () => {
+        const handleCrossingJump = () => {
             if (!crossingActive) return; 
             
             crossingWalkSound.pause();
             crossingWalkSound.currentTime = 0;
-            crossingWalkSound.play();
+            crossingWalkSound.play().catch(e => console.log("Audio play blocked:", e));
             
             chick3D.position.z -= 1;
             if (chick3D.position.z < -14) { 
                 crossingScore++; 
                 crossingScoreDisplay.textContent = crossingScore; 
                 crossingScoreSound.currentTime = 0;
-                crossingScoreSound.play();
+                crossingScoreSound.play().catch(e => console.log("Audio play blocked:", e));
                 chick3D.position.z = 4; 
             }
+        };
+
+        crossing3DContainer.addEventListener('mousedown', (e) => {
+            handleCrossingJump();
         });
+
+        crossing3DContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleCrossingJump();
+        }, { passive: false });
     }
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && crossingView && crossingView.classList && crossingView.classList.contains('active')) {

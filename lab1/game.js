@@ -50,6 +50,24 @@ class GuessSongGame {
         this.audio.onloadedmetadata = () => {
             this.totalTimeEl.textContent = this.formatTime(this.audio.duration);
         };
+
+        // Bubble effect logic
+        this.lastBubbleTime = 0;
+        const triggerBubbles = (e) => {
+            const now = Date.now();
+            if (now - this.lastBubbleTime > 50) {
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                if (clientX && clientY) {
+                    this.createBubbles(clientX, clientY);
+                    this.lastBubbleTime = now;
+                }
+            }
+        };
+
+        this.seekBar.addEventListener('mousedown', triggerBubbles);
+        this.seekBar.addEventListener('touchstart', triggerBubbles);
+        this.seekBar.addEventListener('input', triggerBubbles); // Also while dragging
     }
 
     formatTime(seconds) {
@@ -118,6 +136,24 @@ class GuessSongGame {
         });
 
         this.updateUI();
+    }
+
+    createBubbles(x, y) {
+        const bubbleEmojis = ['🫧'];
+        for (let i = 0; i < 3; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.textContent = bubbleEmojis[0];
+            b.style.left = x + 'px';
+            b.style.top = y + 'px';
+            
+            // Random horizontal drift
+            const tx = (Math.random() - 0.5) * 100;
+            b.style.setProperty('--tx', `${tx}px`);
+            
+            document.body.appendChild(b);
+            setTimeout(() => b.remove(), 1500);
+        }
     }
 
     createCatBurst(x, y, isCorrect) {
