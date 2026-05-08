@@ -25,15 +25,13 @@ body {
     align-items: center;
     padding: 2rem;
     overflow-x: hidden;
-    background-image: radial-gradient(var(--dot-color) 4px, transparent 4px);
-    background-size: 30px 30px;
-    animation: backgroundPan 20s linear infinite;
+    background-image: url('gummy_bear_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-blend-mode: soft-light;
 }
 
-@keyframes backgroundPan {
-    0% { background-position: 0 0; }
-    100% { background-position: 60px 60px; }
-}
 
 .back-link {
     position: absolute; top: 2rem; left: 2rem;

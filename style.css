@@ -18,7 +18,7 @@ body {
     100% { background-position: 60px 60px; }
 }
 
-.container { max-width: 900px; width: 100%; padding: 2rem; z-index: 10; position: relative; }
+.container { max-width: 1200px; width: 100%; padding: 2rem; z-index: 10; position: relative; }
 
 h1 {
     font-size: 3.5rem; text-align: center; margin-bottom: 2.5rem;
@@ -33,7 +33,7 @@ h1 {
     50% { transform: translateY(-10px); }
 }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 3rem 2rem; margin-top: 3rem;}
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem 2rem; margin-top: 3rem;}
 
 .card {
     background: #ffffff;

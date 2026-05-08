@@ -3,599 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab 4: 3D 萌萌冒險 🐥</title>
+    <title>互動歡迎看板 - 史萊姆手部追蹤</title>
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
     <style>
-        body { margin: 0; overflow: hidden; background: #a8e6cf; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #ui {
-            position: absolute; top: 20px; left: 20px; color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3); pointer-events: none;
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: #ffffff;
+            color: #111;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
         }
-        .back-link {
-            position: absolute; bottom: 20px; left: 20px;
-            background: white; padding: 10px 20px; border-radius: 20px;
-            text-decoration: none; color: #ff8b94; font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s;
+
+        /* 隱藏攝影機影像，我們只需要追蹤數據 */
+        .input_video {
+            display: none;
         }
-        .back-link:hover { transform: scale(1.1); }
-        #msg {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px;
-            text-align: center; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 2000; pointer-events: auto;
+
+        /* 軟糖容器 */
+        .slime-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
-        button {
-            background: #ff8b94; color: white; border: none; padding: 10px 25px;
-            border-radius: 10px; cursor: pointer; font-size: 1.1rem; margin-top: 15px;
+
+        /* 夢幻史萊姆泡泡樣式 (原本那種感覺) */
+        .blob {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            user-select: none;
+            opacity: 0.7;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(3px);
+            transition: transform 0.1s ease-out, opacity 0.2s ease-out;
+            cursor: pointer;
             pointer-events: auto;
         }
-        .char-btn { padding: 5px 15px; font-size: 0.9rem; }
-        /* 設定選角圖片的大小 */
-        .char-icon {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 10px;
+
+        /* 跟隨手部的「物理核心」感應器 */
+        #hand-blob {
+            font-size: 120px;
+            top: 50%;
+            left: 50%;
+            opacity: 0; /* 偵測到手才顯示 */
+            z-index: 50;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+
+        /* 回首頁按鈕 */
+        .back-link {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-size: 1rem;
+            color: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000;
+            border-color: #000;
+            transform: translateX(-5px);
+        }
+
+        /* 歡迎內容區塊 */
+        .welcome-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 4rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.05);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: transform 0.1s ease-out;
+            pointer-events: auto;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: 5px;
+            margin-bottom: 1rem;
+            color: #ff9a9e;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 154, 158, 0.5);
+            transform: translateZ(30px);
+        }
+
+        .title {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255, 154, 158, 0.4));
+            margin-bottom: 1.5rem;
+            transform: translateZ(60px);
+        }
+
+        .description {
+            font-size: 1.2rem;
+            color: rgba(0, 0, 0, 0.6);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            transform: translateZ(30px);
+        }
+
+        /* 載入提示 */
+        #loading-msg {
+            position: absolute;
+            bottom: 30px;
+            color: #ff9a9e;
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
+            z-index: 5;
+        }
+
+        /* 偵測狀態指示燈 (按鈕樣式) */
+        #status-indicator {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            padding: 12px 24px;
+            background: rgba(255, 80, 80, 0.1);
+            color: #ff5050;
+            border: 1px solid rgba(255, 80, 80, 0.3);
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        #status-indicator::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #ff5050;
+            border-radius: 50%;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        #status-indicator.active {
+            background: rgba(0, 200, 100, 0.15);
+            color: #008844;
+            border-color: rgba(0, 200, 100, 0.3);
+        }
+
+        #status-indicator.active::before {
+            background: #00cc00;
+            box-shadow: 0 0 12px #00ff00;
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 3rem; }
+            .subtitle { font-size: 1.2rem; }
+            .welcome-container { padding: 2rem; margin: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div style="background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 15px;">
-            <div style="font-size: 1.2rem; font-weight: bold;">救援次數: <span id="score">0</span></div>
-        </div>
-        <div style="margin-top:10px;">
-            <button class="char-btn" onclick="switchCharacter('chiikawa')">吉伊</button>
-            <button class="char-btn" onclick="switchCharacter('hachiware')">小八</button>
-            <button class="char-btn" onclick="switchCharacter('usagi')">烏薩奇</button>
-        </div>
+
+
+
+    <!-- 偵測狀態按鈕 -->
+    <div id="status-indicator">未偵測到手部</div>
+
+    <!-- Gummy Bear Background -->
+    <div class="slime-container">
+        <!-- 手部感應圓圈 (現在變回可見，方便觸碰) -->
+        <div class="blob" id="hand-blob"></div>
     </div>
 
-    <!-- Start Screen -->
-    <div id="start-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,209,220,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1000;">
-        <h1 style="color:#ff8b94; font-size:3rem; margin-bottom:10px;">過馬路挑戰</h1>
-        <p style="color:#666; font-size:1.2rem; margin-bottom:30px;">大家都要看路，小心過馬路喔！</p>
-        <div style="display:flex; gap:20px;">
-            <div class="char-card" onclick="startGame('chiikawa')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <img src="../lab3/chiikawa.jpg" alt="吉伊" class="char-icon">
-                <div style="font-weight:bold; color:#ff8b94;">吉伊</div>
-            </div>
-            <div class="char-card" onclick="startGame('hachiware')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <img src="../lab3/Hachiware.jpg" alt="小八" class="char-icon">
-                <div style="font-weight:bold; color:#4fc3f7;">小八</div>
-            </div>
-            <div class="char-card" onclick="startGame('usagi')" style="background:white; padding:20px; border-radius:20px; cursor:pointer; text-align:center; transition:transform 0.2s;">
-                <img src="../lab3/Usagi.jpg" alt="烏薩奇" class="char-icon">
-                <div style="font-weight:bold; color:#fdd835;">烏薩奇</div>
-            </div>
-        </div>
-        <p style="margin-top:40px; color:#888;">點擊畫面或按空白鍵可以跳躍過馬路喔！</p>
+    <a href="../index.html" class="back-link">← 回到主頁</a>
+
+    <div class="welcome-container" id="tilt-card">
+        <h2 class="subtitle">歡迎加入</h2>
+        <h1 class="title">二林工商<br>資料處理科</h1>
+        <p class="description">
+            揮動你的手掌，看看背景的史萊姆特效！<br>體驗資訊科技與互動藝術的完美結合 ✨
+        </p>
     </div>
 
-    <div id="msg">
-        <h2 id="modal-title">哎呀！受傷了... 🥺</h2>
-        <button onclick="resetGame()">重新振作！✨</button>
-    </div>
+    <div id="loading-msg">正在啟動攝影機與手部追蹤模型... ✋</div>
 
-    <a href="../lab3/index.html" class="back-link">← 回到小遊戲大廳</a>
+    <!-- MediaPipe Video Input -->
+    <video class="input_video"></video>
 
-    <style>
-        .char-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        #ui { display: none; } /* Hide game UI until started */
-    </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, chiikawa, score = 0;
-        let cars = [], lanes = [];
-        let gameActive = false; // Start inactive
-        let currentType = 'chiikawa'; 
-        let isJumping = false; 
-        // 載入吉伊的音效
-        let chiikawaJumpSound = new Audio('../lab3/chiikawa.mp3');
-        chiikawaJumpSound.playbackRate = 1.5;
-        let chiikawaCrashSound = new Audio('../lab3/chiikawa-crash.mp3');
-        chiikawaCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+        // 1. 3D Tilt Effect for the card (mouse fallback & aesthetic)
+        const card = document.getElementById('tilt-card');
+        
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
 
-        // 載入小八的音效
-        let hachiJumpSound = new Audio('../lab3/hachi.mp3'); 
-        hachiJumpSound.playbackRate = 1.5;
-        let hachiCrashSound = new Audio('../lab3/hachi-crash.mp3');
-        hachiCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+        document.addEventListener('mouseleave', () => {
+            card.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
+            card.style.transition = 'transform 0.5s ease';
+        });
 
-        // 載入烏薩奇的音效
-        let usagiJumpSound = new Audio('../lab3/usagi.mp3');
-        usagiJumpSound.playbackRate = 1.5;
-        let usagiCrashSound = new Audio('../lab3/usagi-crash.mp3');
-        usagiCrashSound.playbackRate = 2.0; // 調快到 2 倍速
+        document.addEventListener('mouseenter', () => {
+            card.style.transition = 'none';
+        });
 
+        // 2. MediaPipe Hand Tracking Setup
+        const videoElement = document.querySelector('.input_video');
+        const handBlob = document.getElementById('hand-blob');
+        const loadingMsg = document.getElementById('loading-msg');
 
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffd1dc); 
+        // --- 物理引擎 (小熊軟糖) ---
+        const slimeContainer = document.querySelector('.slime-container');
+        const handBlobEl = document.getElementById('hand-blob');
+        const blobs = [];
+        
+        // 泡泡顏色庫 (原本那種夢幻感)
+        const bubbleColors = [
+            'rgba(255, 182, 193, 0.7)', // 粉紅
+            'rgba(173, 216, 230, 0.7)', // 淺藍
+            'rgba(221, 160, 221, 0.7)', // 薰衣草紫
+            'rgba(144, 238, 144, 0.7)', // 淺綠
+            'rgba(255, 218, 185, 0.7)'  // 粉橘
+        ];
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 8, 10);
-            camera.lookAt(0, 0, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
-
-            // Lighting (Softer)
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
+        // 生成 60 個物理引擎泡泡
+        for (let i = 0; i < 60; i++) {
+            const size = Math.random() * 60 + 30; // 30px ~ 90px
+            const el = document.createElement('div');
+            el.className = 'blob';
+            el.style.width = `${size}px`;
+            el.style.height = `${size}px`;
             
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            dirLight.position.set(10, 20, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            dirLight.shadow.camera.left = -20;
-            dirLight.shadow.camera.right = 20;
-            dirLight.shadow.camera.top = 20;
-            dirLight.shadow.camera.bottom = -20;
-            scene.add(dirLight);
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffd1dc, 0.3);
-            scene.add(hemiLight);
-
-            createPlayer(currentType);
-            initEnvironment();
-
-            window.addEventListener('resize', onWindowResize, false);
-            window.addEventListener('mousedown', jump);
-            window.addEventListener('keydown', (e) => { if(e.code === 'Space') jump(); });
-
-            animate();
-        }
-
-        function startGame(type) {
-            currentType = type;
-            createPlayer(type);
-            chiikawa.position.set(0, 0.7, 4); // Force reset to start
-            gameActive = true;
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('ui').style.display = 'block';
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            // 隨機上色
+            el.style.background = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
             
-            // 一開始就先產生 4 輛車，讓畫面不空曠
-            for(let i=0; i<4; i++) {
-                spawnCar(i, (i % 2 === 0 ? 1 : -1));
-            }
-        }
-
-        function switchCharacter(type) {
-            currentType = type;
-            createPlayer(type);
-        }
-
-        function createPlayer(type) {
-            if(!chiikawa) {
-                chiikawa = new THREE.Group();
-                chiikawa.position.set(0, 0.7, 4);
-                scene.add(chiikawa);
-            }
+            // 【點擊戳破功能】：滑鼠點擊泡泡時移除
+            el.style.pointerEvents = 'auto'; 
+            el.style.cursor = 'pointer';
             
-            // Clear existing parts
-            while(chiikawa.children.length > 0){ 
-                chiikawa.remove(chiikawa.children[0]); 
-            }
-            
-            const bodyMat = new THREE.MeshLambertMaterial({ color: (type === 'usagi' ? 0xfff9c4 : 0xffffff) });
-            
-            // Body
-            const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), bodyMat);
-            body.scale.set(1.1, 1, 0.9);
-            body.castShadow = true;
-            chiikawa.add(body);
-
-            // Ears & Hachiware Fringe
-            if(type === 'usagi') {
-                const earGeo = new THREE.CylinderGeometry(0.1, 0.15, 1.2, 16);
-                const earL = new THREE.Mesh(earGeo, bodyMat);
-                earL.position.set(0.3, 1.0, 0);
-                earL.rotation.z = -0.2;
-                chiikawa.add(earL);
-                const earR = earL.clone(); earR.position.x = -0.3; earR.rotation.z = 0.2;
-                chiikawa.add(earR);
-            } else {
-                const earGeo = new THREE.SphereGeometry(0.2, 16, 16);
-                const blueMat = new THREE.MeshLambertMaterial({ color: 0x90caf9 });
-                const earLMat = (type === 'hachiware') ? blueMat : bodyMat;
-                const earL = new THREE.Mesh(earGeo, earLMat);
-                earL.position.set(0.4, 0.5, 0);
-                chiikawa.add(earL);
-                const earR = earL.clone(); earR.position.x = -0.4;
-                chiikawa.add(earR);
-
-                // Add Refined Hachiware "Hair" (Blue with V-notch)
-                if(type === 'hachiware') {
-                    const hairCanvas = document.createElement('canvas');
-                    hairCanvas.width = 512; hairCanvas.height = 512;
-                    const hCtx = hairCanvas.getContext('2d');
-                    hCtx.fillStyle = '#ffffff'; hCtx.fillRect(0,0,512,512);
-                    hCtx.fillStyle = '#79a9c7'; // Muted Blue from image
-                    // Draw the blue cap with a sharper V-notch
-                    hCtx.beginPath();
-                    hCtx.moveTo(0, 0);
-                    hCtx.lineTo(512, 0);
-                    hCtx.lineTo(512, 160);
-                    hCtx.lineTo(340, 160);
-                    hCtx.lineTo(256, 110); // Sharper V-notch point
-                    hCtx.lineTo(172, 160);
-                    hCtx.lineTo(0, 160);
-                    hCtx.closePath();
-                    hCtx.fill();
-                    
-                    const hairTex = new THREE.CanvasTexture(hairCanvas);
-                    body.material = new THREE.MeshLambertMaterial({ map: hairTex });
-                    body.rotation.y = Math.PI; // Rotate to face the notch forward
-                    
-                    // Update ears to match the new blue
-                    earLMat.color.set(0x79a9c7);
-                }
-            }
-
-            // Eyes
-            const eyeGeo = new THREE.SphereGeometry(0.12, 16, 16);
-            const eyeMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-            const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-            eyeL.position.set(0.25, 0.1, 0.55);
-            chiikawa.add(eyeL);
-            const eyeR = eyeL.clone(); eyeR.position.x = -0.25;
-            chiikawa.add(eyeR);
-
-            // Eye Sparkle
-            const sparkleGeo = new THREE.SphereGeometry(0.04, 8, 8);
-            const sparkleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const sL = new THREE.Mesh(sparkleGeo, sparkleMat);
-            sL.position.set(0.28, 0.15, 0.65);
-            chiikawa.add(sL);
-            const sR = sL.clone(); sR.position.x = -0.22;
-            chiikawa.add(sR);
-
-            // Cheeks (Pink)
-            const cheekGeo = new THREE.SphereGeometry(0.15, 16, 16);
-            const cheekMat = new THREE.MeshLambertMaterial({ color: 0xffb7c5 });
-            const cheekL = new THREE.Mesh(cheekGeo, cheekMat);
-            cheekL.position.set(0.5, -0.1, 0.45);
-            cheekL.scale.set(1, 0.6, 1);
-            chiikawa.add(cheekL);
-            const cheekR = cheekL.clone(); cheekR.position.x = -0.5;
-            chiikawa.add(cheekR);
-        }
-
-        function initEnvironment() {
-
-            // Create Stone Brick Texture (Procedural)
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#d3d3d3'; ctx.fillRect(0,0,256,256);
-            ctx.strokeStyle = '#bcbcbc'; ctx.lineWidth = 4;
-            // Draw brick pattern
-            for(let i=0; i<8; i++) {
-                for(let j=0; j<8; j++) {
-                    const xOff = (i % 2 === 0) ? 0 : 16;
-                    ctx.strokeRect(j*32 + xOff, i*32, 32, 32);
-                }
-            }
-            const groundTex = new THREE.CanvasTexture(canvas);
-            groundTex.wrapS = THREE.RepeatWrapping;
-            groundTex.wrapT = THREE.RepeatWrapping;
-            groundTex.repeat.set(10, 20);
-
-            // Create Ground (Stone Brick Floor)
-            const groundGeo = new THREE.PlaneGeometry(30, 80);
-            const groundMat = new THREE.MeshLambertMaterial({ map: groundTex }); 
-            const ground = new THREE.Mesh(groundGeo, groundMat);
-            ground.rotation.x = -Math.PI / 2; 
-            ground.receiveShadow = true; 
-            ground.position.z = -10; 
-            scene.add(ground);
-
-            // Start Line (Soft White)
-            const startGeo = new THREE.PlaneGeometry(20, 4);
-            const startMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-            const start = new THREE.Mesh(startGeo, startMat);
-            start.rotation.x = -Math.PI / 2;
-            start.position.y = 0.01;
-            start.position.z = 4;
-            start.receiveShadow = true;
-            scene.add(start);
-
-            // Finish Line (Exactly at the end of the road!)
-            const finish = start.clone();
-            finish.position.z = -16;
-            scene.add(finish);
-
-            // Add Hedges to block out-of-bounds view
-            const hedgeGeo = new THREE.BoxGeometry(2, 2, 80); // Longer hedges
-            const hedgeMat = new THREE.MeshLambertMaterial({ color: 0x2e7d32 });
-            const hedgeL = new THREE.Mesh(hedgeGeo, hedgeMat);
-            hedgeL.position.set(-11, 1, -10);
-            hedgeL.castShadow = true; hedgeL.receiveShadow = true;
-            scene.add(hedgeL);
-            const hedgeR = hedgeL.clone(); hedgeR.position.x = 11;
-            scene.add(hedgeR);
-
-            // Add Trees for decoration
-            createTree(-8, 6);
-            createTree(8, 6);
-            createTree(-8, -22); 
-            createTree(8, -22);
-            createTree(-5, -28); // Extra trees in the distance
-            createTree(5, -28);
-
-            // Entire Road (Grey Asphalt)
-            const roadGeo = new THREE.PlaneGeometry(20, 20);
-            const roadMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
-            const road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2;
-            road.position.set(0, 0.05, -6); 
-            road.receiveShadow = true;
-            scene.add(road);
-
-            // Zebra Crossing (Normal Centered Style)
-            for(let s=0; s<9; s++) {
-                const stripe = new THREE.Mesh(new THREE.PlaneGeometry(6, 0.8), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-                stripe.rotation.x = -Math.PI / 2;
-                stripe.position.set(0, 0.08, 2 - (s * 2.2)); 
-                scene.add(stripe);
-            }
-            
-            createTrafficLight(-3, 4);
-            createTrafficLight(3, -14);
-        }
-
-        function createTree(x, z) {
-            const treeGroup = new THREE.Group();
-            // Trunk
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x8b4513 }));
-            trunk.position.y = 0.75;
-            trunk.castShadow = true;
-            treeGroup.add(trunk);
-            // Foliage (3 spheres for a cute look)
-            const foliageMat = new THREE.MeshLambertMaterial({ color: 0x4caf50 });
-            for(let i=0; i<3; i++) {
-                const foliage = new THREE.Mesh(new THREE.SphereGeometry(0.8 - i*0.2, 16, 16), foliageMat);
-                foliage.position.y = 1.5 + i * 0.6;
-                foliage.castShadow = true;
-                treeGroup.add(foliage);
-            }
-            treeGroup.position.set(x, 0, z);
-            scene.add(treeGroup);
-        }
-
-        function createTrafficLight(x, z) {
-            const group = new THREE.Group();
-            // Pole
-            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4, 16), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-            pole.position.y = 2; 
-            pole.castShadow = true;
-            group.add(pole);
-            // Box
-            const box = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-            box.position.y = 3.5; 
-            box.castShadow = true;
-            group.add(box);
-            // Lights (Red, Yellow, Green)
-            const colors = [0xff0000, 0xffff00, 0x00ff00];
-            colors.forEach((c, i) => {
-                const light = new THREE.Mesh(new THREE.CircleGeometry(0.15, 16), new THREE.MeshBasicMaterial({ color: c }));
-                light.position.set(0, 3.9 - i * 0.4, 0.26); group.add(light);
-            });
-            group.position.set(x, 0, z);
-            scene.add(group);
-        }
-
-        function spawnCar(manualLane, manualDir) {
-            if(!gameActive && !manualLane && manualLane !== 0) return; // Only spawn if active OR manual call
-            const laneIdx = (manualLane !== undefined) ? manualLane : Math.floor(Math.random() * 4);
-            const direction = (manualDir !== undefined) ? manualDir : (laneIdx % 2 === 0 ? 1 : -1);
-            const spawnZ = 0 - (laneIdx * 4);
-            const spawnX = direction === 1 ? -11 : 11;
-
-            // Check for overlap (No car in same lane within 4 units)
-            const overlap = cars.some(car => {
-                return car.position.z === spawnZ && Math.abs(car.position.x - spawnX) < 5;
-            });
-            if(overlap) return;
-
-            const color = new THREE.Color().setHSL(Math.random(), 0.7, 0.6);
-            const carGroup = new THREE.Group();
-            
-            // Chassis (Bottom body)
-            const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 1.4), new THREE.MeshLambertMaterial({ color: color }));
-            chassis.position.y = 0.4;
-            chassis.castShadow = true;
-            carGroup.add(chassis);
-            
-            // Cabin (Top part)
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 1.2), new THREE.MeshLambertMaterial({ color: color }));
-            cabin.position.set(-0.2 * direction, 0.9, 0);
-            cabin.castShadow = true;
-            carGroup.add(cabin);
-
-            // Windows
-            const winMat = new THREE.MeshLambertMaterial({ color: 0xccddff });
-            const sideWin = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 1.25), winMat);
-            sideWin.position.set(-0.2 * direction, 0.9, 0);
-            carGroup.add(sideWin);
-            
-            // Wheels (4 cylinders)
-            const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.4, 16);
-            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-            const positions = [
-                [0.7, 0.25, 0.6], [0.7, 0.25, -0.6],
-                [-0.7, 0.25, 0.6], [-0.7, 0.25, -0.6]
-            ];
-            positions.forEach(p => {
-                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                wheel.rotation.x = Math.PI / 2;
-                wheel.position.set(p[0], p[1], p[2]);
-                carGroup.add(wheel);
-            });
-
-            carGroup.position.set(direction === 1 ? -11 : 11, 0, 0 - (laneIdx * 4));
-            // 讓速度隨分數增加：基礎速度 * (1 + 分數 * 0.1)
-            const speedBoost = 1 + (score * 0.1);
-            carGroup.userData = { speed: (Math.random() * 0.1 + 0.1) * speedBoost, direction: direction };
-            
-            scene.add(carGroup);
-            cars.push(carGroup);
-        }
-
-        function jump() {
-            if(!gameActive || isJumping) return;
-            isJumping = true;
-
-            // 判斷不同角色的音效
-            if (currentType === 'chiikawa') {
-                if (chiikawaJumpSound.paused || chiikawaJumpSound.ended) chiikawaJumpSound.play();
-            } else if (currentType === 'hachiware') {
-                if (hachiJumpSound.paused || hachiJumpSound.ended) hachiJumpSound.play();
-            } else if (currentType === 'usagi') {
-                if (usagiJumpSound.paused || usagiJumpSound.ended) usagiJumpSound.play();
-            } else {
-                playSound('jump');
-            }
-            
-            // Animation for jump (Bounce)
-            const jumpDuration = 200;
-            const startZ = chiikawa.position.z;
-            const targetZ = startZ - 4;
-            const startTime = performance.now();
-
-            function updateJump(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / jumpDuration, 1);
+            el.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                playChomp(); // 暫用咬碎音效作為破裂聲
+                if (navigator.vibrate) navigator.vibrate(50);
                 
-                // Parabola for Y
-                chiikawa.position.y = 0.7 + Math.sin(progress * Math.PI) * 1.5;
-                // Linear for Z
-                chiikawa.position.z = startZ + (targetZ - startZ) * progress;
+                // 產生一個簡單的破裂動畫效果
+                el.style.transform = `${el.style.transform} scale(1.5)`;
+                el.style.opacity = '0';
+                
+                setTimeout(() => {
+                    const index = blobs.findIndex(b => b.el === el);
+                    if (index > -1) blobs.splice(index, 1);
+                    el.remove();
+                }, 100);
+            });
+            
+            slimeContainer.insertBefore(el, handBlobEl);
 
-                if (progress < 1) {
-                    requestAnimationFrame(updateJump);
-                } else {
-                    isJumping = false; // Finished jumping
-                    if(chiikawa.position.z <= -16) {
-                        score++;
-                        document.getElementById('score').innerText = score;
-                        playSound('match');
-                        chiikawa.position.z = 4;
-                    }
-                }
-            }
-            requestAnimationFrame(updateJump);
+            blobs.push({
+                el: el,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                size: size
+            });
         }
 
-        function resetGame() {
-            score = 0;
-            isJumping = false;
-            document.getElementById('score').innerText = score;
-            chiikawa.position.set(0, 0.7, 4);
-            gameActive = true;
-            document.getElementById('msg').style.display = 'none';
-            // Clear cars
-            cars.forEach(car => scene.remove(car));
-            cars = [];
-        }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Background Car Spawning (提高出車機率：從 0.02 改成 0.04)
-            if(Math.random() < 0.04) spawnCarBackground();
-
-            // Move cars
-            for(let i = cars.length - 1; i >= 0; i--) {
-                const car = cars[i];
-                car.position.x += car.userData.speed * car.userData.direction;
-
-                // Collision & HUD only when active
-                if(gameActive) {
-                    const dist = car.position.distanceTo(chiikawa.position);
-                    const threshold = 1.3; 
-                    if(dist < threshold) {
-                        // 判斷不同角色的被撞音效
-                        if (currentType === 'chiikawa') {
-                            chiikawaCrashSound.currentTime = 0;
-                            chiikawaCrashSound.play();
-                        } else if (currentType === 'hachiware') {
-                            hachiJumpSound.pause(); // 被撞時立刻停止跳躍音效
-                            hachiJumpSound.currentTime = 0;
-                            hachiCrashSound.currentTime = 0;
-                            hachiCrashSound.play();
-                        } else if (currentType === 'usagi') {
-                            usagiCrashSound.currentTime = 0;
-                            usagiCrashSound.play();
-                        } else {
-                            playSound('crash');
-                        }
-                        gameActive = false;
-                        document.getElementById('modal-title').innerText = "哎呀！被車撞到了... 🥺";
-                        document.getElementById('msg').style.display = 'block';
-                    }
-                }
-
-                // Remove if out of bounds
-                // 當車子開到對面的綠色樹籬 (超過 11 單位) 就移除
-                if((car.userData.direction === 1 && car.position.x > 11) || 
-                   (car.userData.direction === -1 && car.position.x < -11)) {
-                    scene.remove(car);
-                    cars.splice(i, 1);
-                }
-            }
-
-            if(gameActive) {
-                // Camera follow
-                camera.position.z = chiikawa.position.z + 6;
-                camera.lookAt(chiikawa.position.x, 0, chiikawa.position.z);
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // Helper for background car spawning
-        function spawnCarBackground() {
-            const laneIdx = Math.floor(Math.random() * 4);
-            const direction = laneIdx % 2 === 0 ? 1 : -1;
-            const spawnZ = 0 - (laneIdx * 4);
-            const spawnX = direction === 1 ? -11 : 11;
-            const overlap = cars.some(car => car.position.z === spawnZ && Math.abs(car.position.x - spawnX) < 5);
-            if(!overlap) spawnCar(laneIdx, direction);
-        }
-
-        // Add playSound from lab3 logic for consistency
+        // 音效引擎 (產生波波的水滴聲與吃掉的聲音)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
+        function playBloop() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
             const now = audioCtx.currentTime;
-            if (type === 'jump') {
-                osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            } else if (type === 'crash') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(10, now + 0.3);
-                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-            } else if (type === 'match') {
-                osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.2);
-                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
-            }
-            osc.start(now); osc.stop(now + 0.3);
+            osc.frequency.setValueAtTime(600 + Math.random() * 400, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now); osc.stop(now + 0.15);
         }
 
-        init();
+        function playChomp() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            // 混合方波產生一點咬碎的粗糙感
+            osc.type = 'square';
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            gain.gain.setValueAtTime(0.8, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        }
+
+        // 使用 lerp 讓手部追蹤極致滑順
+        let targetHandX = -1000;
+        let targetHandY = -1000;
+        let currentHandX = -1000;
+        let currentHandY = -1000;
+        let handRadius = 60;
+        let isHandOpen = false; 
+        let isHandClosed = false; // 新增：追蹤手是否握拳
+
+        function updatePhysics() {
+            // 平滑插值 (Lerp) 游標位置，消除攝影機的抖動感
+            // 極致精準追蹤 (將 0.35 提高到 0.7 讓跟隨幾乎同步，消除延遲感)
+            currentHandX += (targetHandX - currentHandX) * 0.7;
+            currentHandY += (targetHandY - currentHandY) * 0.7;
+
+            // 更新實際渲染的手部位置
+            handBlobEl.style.left = `${currentHandX}px`;
+            handBlobEl.style.top = `${currentHandY}px`;
+
+            // 計算手部移動速度 (用於「撥動」效果)
+            let handVX = currentHandX - (window.prevHandX || currentHandX);
+            let handVY = currentHandY - (window.prevHandY || currentHandY);
+            window.prevHandX = currentHandX;
+            window.prevHandY = currentHandY;
+
+            for (let i = blobs.length - 1; i >= 0; i--) {
+                let b = blobs[i];
+                
+                // 加入微弱重力 (讓泡泡有緩緩掉落感，但比較輕盈)
+                b.vy += 0.1; 
+                
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // 碰到邊界反彈 (加入彈力衰減)
+                if (b.x < 0) { b.x = 0; b.vx *= -0.8; }
+                if (b.x > window.innerWidth) { b.x = window.innerWidth; b.vx *= -0.8; }
+                if (b.y < 0) { b.y = 0; b.vy *= -0.8; }
+                if (b.y > window.innerHeight) { 
+                    b.y = window.innerHeight; 
+                    b.vy *= -0.7; // 觸地反彈稍微減速
+                    b.vx *= 0.9;  // 在地上的摩擦力
+                }
+
+                // 計算與平滑後手部的距離 (向量)
+                let dx = b.x - currentHandX; 
+                let dy = b.y - currentHandY;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                let minDist = (b.size / 2) + handRadius;
+
+                // 1. 實體碰撞與「撥動」邏輯
+                if (dist < minDist) {
+                    let angle = Math.atan2(dy, dx);
+                    // 將泡泡推到邊界外
+                    b.x = currentHandX + Math.cos(angle) * minDist;
+                    b.y = currentHandY + Math.sin(angle) * minDist;
+                    
+                    // 基礎反彈力
+                    b.vx += Math.cos(angle) * 0.5;
+                    b.vy += Math.sin(angle) * 0.5;
+
+                    // 【撥動效果】：將手的移動速度傳遞給泡泡
+                    b.vx += handVX * 0.5;
+                    b.vy += handVY * 0.5;
+                    
+                    // 碰撞時的阻尼
+                    b.vx *= 0.9;
+                    b.vy *= 0.9;
+                }
+
+                // 2. Emoji 抓取與散開效果 (磁力/斥力)
+                // 為了讓「碰」的感覺更明顯，我們調整磁力邏輯
+                let dxPull = currentHandX - b.x;
+                let dyPull = currentHandY - b.y;
+                
+                if (isHandClosed && dist > minDist && dist < 1500) { 
+                    // 【握拳時】：產生強大引力 (抓取)
+                    let pullForce = 120 / (dist + 50); 
+                    b.vx += dxPull * pullForce * 0.02;
+                    b.vy += dyPull * pullForce * 0.02;
+                } else if (isHandOpen && dist < 800) {
+                    // 當手完全「張開」時，恢復爆炸式散射效果
+                    let scatterForce = (800 - dist) * 0.25; 
+                    
+                    b.vx -= dxPull * scatterForce * 0.02;
+                    b.vy -= dyPull * scatterForce * 0.02;
+                    
+                    // 核心區域的噴發效果
+                    if (dist < 350) {
+                        b.vy -= Math.random() * 10; 
+                        b.vx += (Math.random() - 0.5) * 12;
+                    }
+                }
+
+                // 3. 泡泡彼此之間的碰撞偵測 (不讓它們黏在一起)
+                for (let j = i + 1; j < blobs.length; j++) {
+                    let b2 = blobs[j];
+                    let dx2 = b2.x - b.x;
+                    let dy2 = b2.y - b.y;
+                    let dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                    let minDist2 = (b.size + b2.size) / 2;
+
+                    if (dist2 < minDist2 && dist2 > 0) {
+                        let angle = Math.atan2(dy2, dx2);
+                        let overlap = minDist2 - dist2;
+                        
+                        // 修正重疊，讓它們分開
+                        let moveX = Math.cos(angle) * (overlap / 2);
+                        let moveY = Math.sin(angle) * (overlap / 2);
+                        b.x -= moveX;
+                        b.y -= moveY;
+                        b2.x += moveX;
+                        b2.y += moveY;
+
+                        // 速度交換 (撞開效果)
+                        let bounce = 0.5;
+                        let tempVX = b.vx;
+                        let tempVY = b.vy;
+                        b.vx = (b.vx + b2.vx) * 0.1 - Math.cos(angle) * bounce;
+                        b.vy = (b.vy + b2.vy) * 0.1 - Math.sin(angle) * bounce;
+                        b2.vx = (tempVX + b2.vx) * 0.1 + Math.cos(angle) * bounce;
+                        b2.vy = (tempVY + b2.vy) * 0.1 + Math.sin(angle) * bounce;
+                    }
+                }
+
+                // 速度限制與摩擦力 (調高速度上限)
+                let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                if (speed > 30) { 
+                    b.vx *= 0.90;
+                    b.vy *= 0.90;
+                } else {
+                    // 空氣阻力
+                    b.vx *= 0.985;
+                    b.vy *= 0.985;
+                }
+
+                let scaleX = 1 + Math.abs(b.vx) * 0.015;
+                let scaleY = 1 + Math.abs(b.vy) * 0.015;
+                b.el.style.transform = `translate(-50%, -50%) scale(${Math.max(0.6, 1/scaleY)}, ${Math.max(0.6, 1/scaleX)})`;
+
+                b.el.style.left = `${b.x}px`;
+                b.el.style.top = `${b.y}px`;
+            }
+            requestAnimationFrame(updatePhysics);
+        }
+        updatePhysics();
+
+        const statusIndicator = document.getElementById('status-indicator');
+
+        // 當偵測到手部時的處理函式
+        function onResults(results) {
+            if(loadingMsg.style.display !== 'none') {
+                loadingMsg.style.display = 'none';
+            }
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                statusIndicator.innerText = '手部偵測中...';
+                statusIndicator.classList.add('active');
+                
+                const landmarks = results.multiHandLandmarks[0];
+                const indexFingerTip = landmarks[8]; // 使用食指指尖作為追蹤點
+                
+                // 寫入目標座標 (以食指指尖為中心)
+                targetHandX = (1 - indexFingerTip.x) * window.innerWidth;
+                targetHandY = indexFingerTip.y * window.innerHeight;
+
+                // 如果是第一次偵測到，直接讓 current 跳過去避免飄移
+                if (currentHandX === -1000) {
+                    currentHandX = targetHandX;
+                    currentHandY = targetHandY;
+                }
+
+                handBlobEl.style.opacity = 1;
+
+
+                const wrist = landmarks[0];
+                const middleFingerTip = landmarks[12];
+                const thumbTip = landmarks[4];
+                const pinkyTip = landmarks[20];
+
+                const handSizeRaw = Math.sqrt(
+                    Math.pow(wrist.x - middleFingerTip.x, 2) + 
+                    Math.pow(wrist.y - middleFingerTip.y, 2)
+                );
+                
+                const handSize = handSizeRaw * window.innerHeight * 1.5; 
+
+                // 判斷手是否張大 (大拇指到小拇指的距離是否夠寬)
+                const spreadDist = Math.sqrt(
+                    Math.pow(thumbTip.x - pinkyTip.x, 2) + 
+                    Math.pow(thumbTip.y - pinkyTip.y, 2)
+                );
+                
+                // 計算手部狀態比例
+                const spreadRatio = spreadDist / handSizeRaw;
+                
+                // 定義三種狀態：
+                isHandOpen = spreadRatio > 1.3;   // 大力張開才散開
+                isHandClosed = spreadRatio < 0.45; // 握拳才吸過來
+                
+                // 為了精準操控，我們將食指尖的物理半徑縮小並固定
+                handRadius = 35; 
+                
+                handBlobEl.style.width = `${handRadius * 2}px`;
+                handBlobEl.style.height = `${handRadius * 2}px`;
+
+                // 手部標籤已移除，純粹維持物理運算的座標
+
+            } else {
+                statusIndicator.innerText = '未偵測到手部';
+                statusIndicator.classList.remove('active');
+                handBlobEl.style.opacity = 0;
+                handX = -1000;
+                handY = -1000;
+                isHandOpen = false;
+            }
+        }
+
+        // 初始化 Hands 模型
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+
+        hands.setOptions({
+            maxNumHands: 1, // 只追蹤一隻手
+            modelComplexity: 1, // 0或1，1比較準確
+            minDetectionConfidence: 0.75,
+            minTrackingConfidence: 0.75
+        });
+
+        hands.onResults(onResults);
+
+        // 啟動攝影機
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 640,
+            height: 480
+        });
+
+        camera.start().catch(err => {
+            console.error("Camera start failed:", err);
+            loadingMsg.innerText = "無法存取攝影機 😢 請確認是否給予權限。";
+            loadingMsg.style.color = "#ff6b6b";
+        });
+
     </script>
 </body>
 </html>
