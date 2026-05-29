@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 5：二林工商科系大考驗</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdfaf5;
+            --primary: #9babb8;
+            --accent: #ffb3ba;
+            --accent2: #a8d8ea;
+            --text: #594f3e;
+            --card-border: #e0d8c0;
+            --shadow: rgba(155, 171, 184, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+            background-image: radial-gradient(#e0d8c0 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+        }
+
+        /* ── Header ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header .tag {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 900;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.8rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        .page-header p {
+            font-size: 1rem;
+            color: #b09c73;
+            margin-top: 0.4rem;
+        }
+
+        /* ── Progress ── */
+        .progress-wrap {
+            background: white;
+            border: 3px solid var(--card-border);
+            border-radius: 2rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 6px 6px 0 var(--shadow);
+        }
+
+        .progress-text {
+            font-weight: 900;
+            color: var(--primary);
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            height: 12px;
+            background: #f0ede6;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid var(--card-border);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #fca5a5);
+            border-radius: 1rem;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        /* ── Quiz Card ── */
+        .quiz-card {
+            background: white;
+            border: 4px solid var(--primary);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 10px 10px 0 var(--shadow);
+            animation: slideIn 0.35s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-tag {
+            display: inline-block;
+            background: var(--accent2);
+            color: #2a7a9a;
+            font-size: 0.8rem;
+            font-weight: 900;
+            padding: 0.2rem 0.8rem;
+            border-radius: 1rem;
+            margin-bottom: 0.7rem;
+            letter-spacing: 1px;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1.55;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option-btn {
+            background: #f8f5f0;
+            border: 3px solid var(--card-border);
+            border-radius: 1.2rem;
+            padding: 0.85rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-align: left;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 4px 4px 0 var(--shadow);
+        }
+
+        .option-btn .letter {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+
+        .option-btn.correct {
+            border-color: #6ee7b7;
+            background: #f0fdf9;
+        }
+
+        .option-btn.correct .letter {
+            background: #34d399;
+        }
+
+        .option-btn.wrong {
+            border-color: #fca5a5;
+            background: #fff5f5;
+        }
+
+        .option-btn.wrong .letter {
+            background: #f87171;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* ── Feedback ── */
+        .feedback {
+            margin-top: 1.2rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.6rem;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .feedback.show { display: flex; }
+
+        .feedback.correct-fb {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #6ee7b7;
+        }
+
+        .feedback.wrong-fb {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #fca5a5;
+        }
+
+        /* ── Next Button ── */
+        .next-btn {
+            width: 100%;
+            margin-top: 1.2rem;
+            padding: 0.9rem;
+            background: var(--accent);
+            color: white;
+            border: 3px solid #e69ea5;
+            border-radius: 1.5rem;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #e69ea5;
+            transition: all 0.15s;
+            display: none;
+        }
+
+        .next-btn:hover { transform: translateY(2px); box-shadow: 0 4px 0 #e69ea5; }
+        .next-btn:active { transform: translateY(6px); box-shadow: none; }
+        .next-btn.show { display: block; }
+
+        /* ── Result ── */
+        .result-card {
+            background: white;
+            border: 4px solid var(--primary);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            box-shadow: 10px 10px 0 var(--shadow);
+            text-align: center;
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        .result-card.show { display: block; }
+
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .result-score span {
+            font-size: 1.2rem;
+            color: #b09c73;
+        }
+
+        .result-msg {
+            font-size: 1rem;
+            color: #b09c73;
+            margin-top: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .retry-btn {
+            padding: 0.9rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: 3px solid #7a8e9b;
+            border-radius: 1.5rem;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #7a8e9b;
+            transition: all 0.15s;
+            margin: 0.4rem 0.3rem;
+        }
+
+        .retry-btn:hover { transform: translateY(2px); box-shadow: 0 3px 0 #7a8e9b; }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #b09c73;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <span class="tag">Lab 5</span>
+            <h1>二林工商科系大考驗 📚</h1>
+            <p>看你對各科系了解多少！共 10 題，加油～</p>
+        </div>
+
+        <div class="progress-wrap">
+            <span class="progress-text" id="progress-text">第 1 / 10 題</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="quiz-card" id="quiz-card">
+            <span class="question-tag" id="question-tag">【資處科】</span>
+            <p class="question-text" id="question-text">載入中...</p>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+            <button class="next-btn" id="next-btn">下一題 →</button>
+        </div>
+
+        <div class="result-card" id="result-card">
+            <div class="result-emoji" id="result-emoji">🎉</div>
+            <div class="result-title">測驗完成！</div>
+            <div class="result-score" id="result-score">0 <span>/ 10 題</span></div>
+            <p class="result-msg" id="result-msg">...</p>
+            <button class="retry-btn" onclick="startQuiz()">再挑戰一次 🔄</button>
+            <a href="../index.html" class="back-btn">← 回到首頁</a>
+        </div>
+    </div>
+
+    <script>
+        const QUESTIONS = [
+            {
+                tag: '【資處科】',
+                q: '資處科上課最常會使用什麼工具？',
+                opts: ['電腦與文書軟體', '木工工具', '水彩顏料', '電焊設備'],
+                ans: 0
+            },
+            {
+                tag: '【商經科】',
+                q: '如果未來想開店或創業，哪個科系最相關？',
+                opts: ['商經科', '機械科', '電子科', '裝潢科'],
+                ans: 0
+            },
+            {
+                tag: '【電子科】',
+                q: '電子科學生最常接觸什麼？',
+                opts: ['電路板與電子零件', '室內配色', '烘焙甜點', '花藝設計'],
+                ans: 0
+            },
+            {
+                tag: '【電機科】',
+                q: '電機科主要學習哪方面？',
+                opts: ['電力控制與配線', '商品設計', '服裝造型', '餐飲管理'],
+                ans: 0
+            },
+            {
+                tag: '【機械科】',
+                q: '機械科上課常需要操作什麼？',
+                opts: ['加工機械與工具', '收銀機', '相機', '畫架'],
+                ans: 0
+            },
+            {
+                tag: '【裝潢技術科】',
+                q: '裝潢科比較重視哪種能力？',
+                opts: ['空間美感與施工技術', '程式設計', '動畫剪輯', '財務管理'],
+                ans: 0
+            },
+            {
+                tag: '【室內空間設計科】',
+                q: '室設科學生常使用哪種軟體？',
+                opts: ['AutoCAD、SketchUp', '遊戲模擬器', '音樂剪輯軟體', '點餐系統'],
+                ans: 0
+            },
+            {
+                tag: '【綜合高中】',
+                q: '如果還不確定未來方向，哪個選擇比較適合？',
+                opts: ['綜合高中', '直接工作', '不讀書', '重考國中'],
+                ans: 0
+            },
+            {
+                tag: '【科系綜合】',
+                q: '哪個科系比較可能參加設計與繪圖競賽？',
+                opts: ['室內空間設計科', '電機科', '機械科', '商經科'],
+                ans: 0
+            },
+            {
+                tag: '【技職精神】',
+                q: '如果你喜歡「做中學」，哪個方向最適合？',
+                opts: ['技職科系', '完全沒有實作的課程', '只考試不操作', '沒有分組的課程'],
+                ans: 0
+            }
+        ];
+
+        const LETTERS = ['A', 'B', 'C', 'D'];
+        const RESULT_MSGS = [
+            [0, 3,  '沒關係，多了解一下各科系吧！📖', '😅'],
+            [4, 6,  '還不錯！繼續加油！💪', '😊'],
+            [7, 9,  '很厲害！對科系非常了解！🌟', '😎'],
+            [10, 10, '滿分！你是科系達人！🏆', '🎉']
+        ];
+
+        let currentQ = 0, score = 0, answered = false;
+
+        const questionTag  = document.getElementById('question-tag');
+        const questionText = document.getElementById('question-text');
+        const optionsEl    = document.getElementById('options');
+        const feedbackEl   = document.getElementById('feedback');
+        const nextBtn      = document.getElementById('next-btn');
+        const progressText = document.getElementById('progress-text');
+        const progressBar  = document.getElementById('progress-bar');
+        const quizCard     = document.getElementById('quiz-card');
+        const resultCard   = document.getElementById('result-card');
+
+        // Audio
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function beep(freq, dur, type = 'sine') {
+            if (ctx.state === 'suspended') ctx.resume();
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = type; o.frequency.setValueAtTime(freq, ctx.currentTime);
+            g.gain.setValueAtTime(0.18, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+            o.start(); o.stop(ctx.currentTime + dur);
+        }
+        function playCorrect() { beep(600, 0.12); setTimeout(() => beep(900, 0.15), 120); }
+        function playWrong()   { beep(200, 0.25, 'sawtooth'); }
+
+        function renderQuestion() {
+            const q = QUESTIONS[currentQ];
+            answered = false;
+
+            questionTag.textContent  = q.tag;
+            questionText.textContent = q.q;
+
+            optionsEl.innerHTML = '';
+            q.opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span>${opt}</span>`;
+                btn.addEventListener('click', () => selectAnswer(i, btn));
+                optionsEl.appendChild(btn);
+            });
+
+            feedbackEl.className = 'feedback';
+            feedbackEl.textContent = '';
+            nextBtn.classList.remove('show');
+
+            const pct = (currentQ / QUESTIONS.length) * 100;
+            progressBar.style.width = pct + '%';
+            progressText.textContent = `第 ${currentQ + 1} / ${QUESTIONS.length} 題`;
+
+            quizCard.style.animation = 'none';
+            requestAnimationFrame(() => { quizCard.style.animation = ''; });
+        }
+
+        function selectAnswer(idx, clickedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const q = QUESTIONS[currentQ];
+            const btns = optionsEl.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+
+            const isCorrect = idx === q.ans;
+
+            // Mark selected
+            clickedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+            // Always show the correct one
+            btns[q.ans].classList.add('correct');
+
+            if (isCorrect) {
+                score++;
+                feedbackEl.className = 'feedback correct-fb show';
+                feedbackEl.innerHTML = '✅ 答對了！太棒了！';
+                playCorrect();
+            } else {
+                feedbackEl.className = 'feedback wrong-fb show';
+                feedbackEl.innerHTML = `❌ 答錯了！正確答案是 <strong>${LETTERS[q.ans]}. ${q.opts[q.ans]}</strong>`;
+                playWrong();
+            }
+
+            nextBtn.classList.add('show');
+            nextBtn.textContent = currentQ + 1 < QUESTIONS.length ? '下一題 →' : '看結果 🎊';
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentQ++;
+            if (currentQ < QUESTIONS.length) {
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        });
+
+        function showResult() {
+            quizCard.style.display = 'none';
+            resultCard.classList.add('show');
+            progressBar.style.width = '100%';
+            progressText.textContent = `完成！${QUESTIONS.length} / ${QUESTIONS.length} 題`;
+
+            document.getElementById('result-score').innerHTML =
+                `${score} <span>/ ${QUESTIONS.length} 題</span>`;
+
+            let msg = '', emoji = '😊';
+            for (const [lo, hi, m, e] of RESULT_MSGS) {
+                if (score >= lo && score <= hi) { msg = m; emoji = e; }
+            }
+            document.getElementById('result-emoji').textContent = emoji;
+            document.getElementById('result-msg').textContent = msg;
+
+            // Confetti-like sparkle
+            beep(400, 0.08);
+            setTimeout(() => beep(600, 0.08), 100);
+            setTimeout(() => beep(800, 0.12), 200);
+        }
+
+        function startQuiz() {
+            currentQ = 0; score = 0;
+            quizCard.style.display = '';
+            resultCard.classList.remove('show');
+            renderQuestion();
+        }
+
+        // Shuffle questions each time
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+
+        startQuiz();
+    </script>
+</body>
+
+</html>

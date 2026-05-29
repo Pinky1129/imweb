@@ -45,14 +45,13 @@
                         <p>真香！看準時機投球</p>
                     </div>
                 </button>
-                <a href="../lab4/index.html" class="menu-card" style="text-decoration: none; color: inherit;">
+                <button class="menu-card" data-game="crossing">
                     <span class="emoji">🐥</span>
                     <div class="info">
-                        <h3>請遵守交通
-                        </h3>
+                        <h3>請遵守交通</h3>
                         <p>全螢幕立體大挑戰！✨</p>
                     </div>
-                </a>
+                </button>
             </div>
             <a href="../index.html" class="back-link-main">← 回到首頁</a>
         </div>
@@ -99,6 +98,29 @@
             </main>
             <footer class="game-footer">
                 <button id="basket-start-btn" class="start-btn">開始挑戰</button>
+            </footer>
+        </div>
+
+        <!-- Crossing Game View -->
+        <div id="crossing-game" class="view">
+            <header class="game-header">
+                <button class="btn-lobby-back">← 選單</button>
+                <div class="stat-card">
+                    <span class="label">救援次數</span>
+                    <span id="crossing-score" class="value">0</span>
+                </div>
+                <div class="timer-card">
+                    <div id="crossing-timer-bar" class="timer-bar"></div>
+                    <span id="crossing-time-left" class="value">30</span>
+                    <span class="label">秒</span>
+                </div>
+            </header>
+            <main class="game-body crossing-3d-container" id="crossing-3d-container">
+                <!-- 3D Canvas will be injected here -->
+                <div id="crossing-hint" class="hint">點擊畫面跳躍，或按空白鍵！🐥</div>
+            </main>
+            <footer class="game-footer">
+                <button id="crossing-start-btn" class="start-btn">開始挑戰</button>
             </footer>
         </div>
     </div>

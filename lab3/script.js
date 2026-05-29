@@ -831,11 +831,98 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Chicks Crossing 3D Logic ---
     let scene, camera, renderer, chick3D, crossingScore = 0, crossingTimeLeft = 30, crossingTimerId, crossingActive = false;
     let cars3D = [], carSpawnerId;
+    let selectedChar = 'chiikawa';
+
+    // 斑馬線與紅綠燈變數
+    let trafficLightState = 'green';
+    let redLight, yellowLight, greenLight;
+    let trafficLightTimerId;
 
     // 自訂過馬路音效
     const crossingWalkSound = new Audio('Chiikawa.mp3');
     const crossingCrashSound = new Audio('chiikawa-crash.mp3');
+    const hachiWalkSound = new Audio('hachi.mp3');
+    const hachiCrashSound = new Audio('hachi-crash.mp3');
+    const usagiWalkSound = new Audio('usagi.mp3');
+    const usagiCrashSound = new Audio('usagi-crash.mp3');
     const crossingScoreSound = new Audio('score2.mp3');
+
+    // 註冊 UI 選擇事件
+    document.querySelectorAll('.char-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedChar = card.dataset.char;
+            
+            // 播放角色專屬預覽音效
+            playCharSound(selectedChar, 'walk');
+            
+            // 更新 3D 角色貼圖
+            update3DCharacter();
+        });
+    });
+
+    function playCharSound(char, type) {
+        let sound;
+        if (char === 'chiikawa') {
+            sound = type === 'walk' ? crossingWalkSound : crossingCrashSound;
+        } else if (char === 'hachiware') {
+            sound = type === 'walk' ? hachiWalkSound : hachiCrashSound;
+        } else if (char === 'usagi') {
+            sound = type === 'walk' ? usagiWalkSound : usagiCrashSound;
+        }
+        if (sound) {
+            [crossingWalkSound, crossingCrashSound, hachiWalkSound, hachiCrashSound, usagiWalkSound, usagiCrashSound].forEach(s => {
+                if (s) { s.pause(); s.currentTime = 0; }
+            });
+            sound.play().catch(e => console.log("Audio play blocked:", e));
+        }
+    }
+
+    function update3DCharacter() {
+        if (!chick3D) return;
+        
+        // 清除舊有的 3D 模型元件
+        while(chick3D.children.length > 0) {
+            chick3D.remove(chick3D.children[0]);
+        }
+        
+        const textureLoader = new THREE.TextureLoader();
+        let texPath = 'chiikawa.jpg';
+        if (selectedChar === 'hachiware') texPath = 'Hachiware.jpg';
+        else if (selectedChar === 'usagi') texPath = 'Usagi.jpg';
+        
+        const charTex = textureLoader.load(texPath);
+        const bodyMat = new THREE.MeshLambertMaterial({ map: charTex });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), bodyMat);
+        body.castShadow = true;
+        
+        chick3D.add(body);
+        chick3D.position.y = 0.6;
+    }
+
+    function cycleTrafficLight() {
+        if (!crossingActive) return;
+        if (trafficLightState === 'green') {
+            trafficLightState = 'yellow';
+            if (yellowLight) yellowLight.material.color.setHex(0xffff00);
+            if (greenLight) greenLight.material.color.setHex(0x003300);
+            if (redLight) redLight.material.color.setHex(0x330000);
+            trafficLightTimerId = setTimeout(cycleTrafficLight, 1500); // 黃燈 1.5 秒
+        } else if (trafficLightState === 'yellow') {
+            trafficLightState = 'red';
+            if (redLight) redLight.material.color.setHex(0xff0000);
+            if (yellowLight) yellowLight.material.color.setHex(0x333300);
+            if (greenLight) greenLight.material.color.setHex(0x003300);
+            trafficLightTimerId = setTimeout(cycleTrafficLight, 3500); // 紅燈 3.5 秒
+        } else if (trafficLightState === 'red') {
+            trafficLightState = 'green';
+            if (greenLight) greenLight.material.color.setHex(0x00ff00);
+            if (redLight) redLight.material.color.setHex(0x330000);
+            if (yellowLight) yellowLight.material.color.setHex(0x333300);
+            trafficLightTimerId = setTimeout(cycleTrafficLight, 4000); // 綠燈 4 秒
+        }
+    }
 
     function initCrossing3D() {
         if (!renderer) {
@@ -845,14 +932,58 @@ document.addEventListener('DOMContentLoaded', () => {
             crossing3DContainer.appendChild(renderer.domElement);
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 10, 5); dirLight.castShadow = true; scene.add(dirLight);
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffeb3b })); body.castShadow = true;
-            const beak = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.2), new THREE.MeshLambertMaterial({ color: 0xff9800 })); beak.position.set(0, 0, 0.5);
-            chick3D = new THREE.Group(); chick3D.add(body); chick3D.add(beak); chick3D.position.y = 0.5; scene.add(chick3D);
+            
+            chick3D = new THREE.Group();
+            scene.add(chick3D);
+            update3DCharacter();
+
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 40), new THREE.MeshLambertMaterial({ color: 0x81c784 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
             for(let i=0; i<4; i++) {
                 const road = new THREE.Mesh(new THREE.PlaneGeometry(20, 4), new THREE.MeshLambertMaterial({ color: 0x78909c }));
                 road.rotation.x = -Math.PI / 2; road.position.y = 0.01; road.position.z = 0 - (i * 4); scene.add(road);
             }
+
+            // --- 繪製 3D 斑馬線 (Zebra Crossing) ---
+            const stripeGeo = new THREE.PlaneGeometry(0.6, 16); // 橫跨所有車道
+            const stripeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            for(let i = -5; i <= 5; i += 2) {
+                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+                stripe.rotation.x = -Math.PI / 2;
+                stripe.position.set(i * 1.5, 0.02, -6); // 略微高於路面
+                stripe.receiveShadow = true;
+                scene.add(stripe);
+            }
+
+            // --- 繪製 3D 紅綠燈 (Traffic Light) ---
+            // 燈桿
+            const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 4, 8);
+            const poleMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+            const lightPole = new THREE.Mesh(poleGeo, poleMat);
+            lightPole.position.set(-6, 2, 4); // 起點旁邊
+            lightPole.castShadow = true;
+            scene.add(lightPole);
+
+            // 燈箱
+            const boxGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
+            const boxMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+            const lightBox = new THREE.Mesh(boxGeo, boxMat);
+            lightBox.position.set(-6, 4, 4);
+            lightBox.castShadow = true;
+            scene.add(lightBox);
+
+            // 三色燈球
+            redLight = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0x330000 }));
+            redLight.position.set(-5.5, 4.6, 4);
+            scene.add(redLight);
+
+            yellowLight = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0x333300 }));
+            yellowLight.position.set(-5.5, 4.0, 4);
+            scene.add(yellowLight);
+
+            greenLight = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+            greenLight.position.set(-5.5, 3.4, 4);
+            scene.add(greenLight);
+
             animate3D();
         }
         resetCrossing3D();
@@ -861,14 +992,17 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(animate3D);
         if (crossingActive) {
             cars3D.forEach((car, index) => {
-                car.position.x += car.userData.speed * car.userData.direction;
+                // 如果是紅燈，車輛靜止！綠燈/黃燈時車輛才移動
+                if (trafficLightState !== 'red') {
+                    car.position.x += car.userData.speed * car.userData.direction;
+                }
                 if (Math.abs(car.position.x) > 12) { scene.remove(car); cars3D.splice(index, 1); }
                 if (car.position.distanceTo(chick3D.position) < 1.2) {
-                    crossingWalkSound.pause();
-                    crossingWalkSound.currentTime = 0;
-                    crossingCrashSound.currentTime = 0;
-                    crossingCrashSound.play();
-                    stopCrossing3D(); showGameOver('救援失敗！😵', '小雞在馬路上受傷了...', crossingScore);
+                    playCharSound(selectedChar, 'crash');
+                    let name = '吉伊卡哇';
+                    if (selectedChar === 'hachiware') name = '小八貓';
+                    else if (selectedChar === 'usagi') name = '烏薩奇';
+                    stopCrossing3D(); showGameOver('救援失敗！😵', `${name}在馬路上受傷了...`, crossingScore);
                 }
             });
             camera.position.z = chick3D.position.z + 6; camera.lookAt(chick3D.position.x, 0, chick3D.position.z);
@@ -885,13 +1019,35 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetCrossing3D() {
         stopCrossing3D(); crossingScore = 0; crossingTimeLeft = 30;
         crossingScoreDisplay.textContent = 0; crossingTimeDisplay.textContent = 30; crossingTimerBar.style.width = '100%';
-        chick3D.position.set(0, 0.5, 4); cars3D.forEach(c => scene.remove(c)); cars3D = [];
+        if (chick3D) {
+            chick3D.position.set(0, 0.6, 4);
+            update3DCharacter();
+        }
+        cars3D.forEach(c => scene.remove(c)); cars3D = [];
+        
+        // 重設紅綠燈為綠燈
+        trafficLightState = 'green';
+        if (greenLight) greenLight.material.color.setHex(0x00ff00);
+        if (redLight) redLight.material.color.setHex(0x330000);
+        if (yellowLight) yellowLight.material.color.setHex(0x333300);
     }
-    function stopCrossing3D() { crossingActive = false; clearInterval(crossingTimerId); clearInterval(carSpawnerId); }
+    function stopCrossing3D() { 
+        crossingActive = false; 
+        clearInterval(crossingTimerId); 
+        clearInterval(carSpawnerId); 
+        clearTimeout(trafficLightTimerId);
+        [crossingWalkSound, crossingCrashSound, hachiWalkSound, hachiCrashSound, usagiWalkSound, usagiCrashSound].forEach(s => {
+            if (s) { s.pause(); s.currentTime = 0; }
+        });
+    }
     if (crossingStartBtn) {
         crossingStartBtn.addEventListener('click', () => {
             playSound('start'); resetCrossing3D(); crossingActive = true;
             carSpawnerId = setInterval(spawnCar3D, 800);
+            
+            // 啟動紅綠燈循環計時器
+            trafficLightTimerId = setTimeout(cycleTrafficLight, 4000);
+
             crossingTimerId = setInterval(() => {
                 crossingTimeLeft--; crossingTimeDisplay.textContent = crossingTimeLeft; crossingTimerBar.style.width = `${(crossingTimeLeft/30)*100}%`;
                 if (crossingTimeLeft <= 0) { stopCrossing3D(); showGameOver('救援時間結束！🏁', '你成功救出的次數：', crossingScore); }
@@ -902,9 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleCrossingJump = () => {
             if (!crossingActive) return; 
             
-            crossingWalkSound.pause();
-            crossingWalkSound.currentTime = 0;
-            crossingWalkSound.play().catch(e => console.log("Audio play blocked:", e));
+            playCharSound(selectedChar, 'walk');
             
             chick3D.position.z -= 1;
             if (chick3D.position.z < -14) { 
