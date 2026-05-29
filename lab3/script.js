@@ -79,7 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     menuCards.forEach(card => card.addEventListener('click', () => {
         menuClickSound.currentTime = 0;
         menuClickSound.play();
-        showView(card.dataset.game);
+        const game = card.dataset.game;
+        showView(game);
     }));
     lobbyBackBtns.forEach(btn => btn.addEventListener('click', () => {
         menuClickSound.currentTime = 0;
@@ -926,10 +927,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initCrossing3D() {
         if (!renderer) {
+            const width = crossing3DContainer.offsetWidth;
+            const height = crossing3DContainer.offsetHeight || 350;
+            
             scene = new THREE.Scene(); scene.background = new THREE.Color(0xa8e6cf);
-            camera = new THREE.PerspectiveCamera(75, crossing3DContainer.offsetWidth / 350, 0.1, 1000); camera.position.set(0, 8, 10);
-            renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(crossing3DContainer.offsetWidth, 350); renderer.shadowMap.enabled = true;
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); camera.position.set(0, 8, 10);
+            renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(width, height); renderer.shadowMap.enabled = true;
             crossing3DContainer.appendChild(renderer.domElement);
+            
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                if (crossingActive && crossing3DContainer) {
+                    const newWidth = crossing3DContainer.offsetWidth;
+                    const newHeight = crossing3DContainer.offsetHeight || 350;
+                    camera.aspect = newWidth / newHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(newWidth, newHeight);
+                }
+            });
+
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 10, 5); dirLight.castShadow = true; scene.add(dirLight);
             

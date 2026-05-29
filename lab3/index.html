@@ -46,9 +46,9 @@
                     </div>
                 </button>
                 <button class="menu-card" data-game="crossing">
-                    <span class="emoji">🐥</span>
+                    <img src="chiikawa.jpg" class="menu-icon" alt="吉伊卡哇">
                     <div class="info">
-                        <h3>請遵守交通</h3>
+                        <h3>吉伊卡哇過馬路</h3>
                         <p>全螢幕立體大挑戰！✨</p>
                     </div>
                 </button>
@@ -115,14 +115,32 @@
                     <span class="label">秒</span>
                 </div>
             </header>
+
+            <!-- Character Selector -->
+            <div id="char-selector" class="char-selector">
+                <div class="char-title">選擇你要拯救的小可愛 💖</div>
+                <div class="char-options">
+                    <div class="char-card active" data-char="chiikawa">
+                        <img src="chiikawa.jpg" alt="吉伊卡哇">
+                        <span>吉伊卡哇</span>
+                    </div>
+                    <div class="char-card" data-char="hachiware">
+                        <img src="Hachiware.jpg" alt="小八貓">
+                        <span>小八貓</span>
+                    </div>
+                    <div class="char-card" data-char="usagi">
+                        <img src="Usagi.jpg" alt="烏薩奇">
+                        <span>烏薩奇</span>
+                    </div>
+                </div>
+            </div>
+
             <main class="game-body crossing-3d-container" id="crossing-3d-container">
                 <!-- 3D Canvas will be injected here -->
                 <div id="crossing-hint" class="hint">點擊畫面跳躍，或按空白鍵！🐥</div>
             </main>
             <footer class="game-footer">
                 <button id="crossing-start-btn" class="start-btn">開始挑戰</button>
-            </footer>
-        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
