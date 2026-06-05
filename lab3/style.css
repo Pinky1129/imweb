@@ -496,8 +496,25 @@ body {
     text-align: center;
     font-size: 0.9rem;
     color: #b09c73;
-    margin-bottom: 0.5rem;
     font-weight: 800;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.2rem 0.8rem;
+    border-radius: 1rem;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#basket-hint {
+    bottom: auto;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid #e0d8c0;
 }
 /* 讓自訂的圖示大小跟原本的 Emoji 一樣大 */
 .menu-card .menu-icon {

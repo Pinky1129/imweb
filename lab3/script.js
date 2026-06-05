@@ -887,12 +887,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (sound) {
             if (type === 'walk') {
-                [crossingWalkSound, crossingCrashSound, chiikawaMissSound,
-                 hachiWalkSound, hachiCrashSound, hachiMissSound,
-                 usagiWalkSound, usagiCrashSound, usagiMissSound].forEach(s => {
-                    if (s) { s.pause(); s.currentTime = 0; }
-                });
+                // 如果該音效還在播放中，則不打斷它，等它播完
+                if (!sound.paused && !sound.ended && sound.currentTime > 0) {
+                    return; 
+                }
             }
+            
+            // 無論播放什麼音效（包含被撞），都先暫停其他角色的所有音效
+            [crossingWalkSound, crossingCrashSound, chiikawaMissSound,
+             hachiWalkSound, hachiCrashSound, hachiMissSound,
+             usagiWalkSound, usagiCrashSound, usagiMissSound].forEach(s => {
+                if (s && s !== sound) { s.pause(); s.currentTime = 0; }
+            });
+            
+            sound.currentTime = 0;
             sound.play().catch(e => console.log("Audio play blocked:", e));
         }
     }
@@ -1022,13 +1030,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ color: 0x81c784 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
             for(let i=0; i<4; i++) {
                 const road = new THREE.Mesh(new THREE.PlaneGeometry(40, 4), new THREE.MeshLambertMaterial({ color: 0x78909c }));
-                road.rotation.x = -Math.PI / 2; road.position.y = 0.01; road.position.z = 0 - (i * 4); scene.add(road);
+                road.rotation.x = -Math.PI / 2; road.position.y = 0.01; road.position.z = 0 - (i * 4);
+                road.receiveShadow = true;
+                scene.add(road);
             }
 
             // --- 繪製 3D 斑馬線 (Zebra Crossing) 改為橫向 ---
-            const stripeGeo = new THREE.PlaneGeometry(8, 0.6); // 寬 8，深 0.6
+            const stripeGeo = new THREE.PlaneGeometry(8, 0.8); // 寬 8，深 0.8 (變寬)
             const stripeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-            for(let z = -0.5; z >= -11.5; z -= 1.5) {
+            for(let z = 0; z >= -12; z -= 2.0) {
                 const stripe = new THREE.Mesh(stripeGeo, stripeMat);
                 stripe.rotation.x = -Math.PI / 2;
                 stripe.position.set(0, 0.02, z); // 置中，沿著Z軸排列
@@ -1115,14 +1125,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (crossingActive) {
             cars3D.forEach((car, index) => {
-                // 如果是紅燈，車輛靜止！綠燈/黃燈時車輛才移動
-                if (trafficLightState !== 'red') {
-                    car.position.x += car.userData.speed * car.userData.direction;
-                }
+                car.position.x += car.userData.speed * car.userData.direction;
                 if (Math.abs(car.position.x) > 16) { scene.remove(car); cars3D.splice(index, 1); }
                 if (car.position.distanceTo(chick3D.position) < 1.2) {
                     playCharSound(selectedChar, 'crash');
-                    playCharSound(selectedChar, 'miss');
                     let name = '吉伊卡哇';
                     if (selectedChar === 'hachiware') name = '小八貓';
                     else if (selectedChar === 'usagi') name = '烏薩奇';
@@ -1251,27 +1257,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!crossingActive) return;
             if (chick3D && chick3D.userData && chick3D.userData.isJumping) return; // 避免連跳
             
-            // 播放角色跳躍音效 (輕快的「嘣！」聲)
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const jumpOsc = audioCtx.createOscillator();
-            const jumpGain = audioCtx.createGain();
-            jumpOsc.connect(jumpGain); jumpGain.connect(audioCtx.destination);
-            jumpOsc.type = 'sine';
-            const now = audioCtx.currentTime;
-            jumpOsc.frequency.setValueAtTime(300, now);
-            jumpOsc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
-            jumpOsc.frequency.exponentialRampToValueAtTime(450, now + 0.18);
-            jumpGain.gain.setValueAtTime(0.15, now);
-            jumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-            jumpOsc.start(now); jumpOsc.stop(now + 0.22);
-            
             playCharSound(selectedChar, 'walk');
             
             if (!chick3D.userData) chick3D.userData = {};
             chick3D.userData.isJumping = true;
             chick3D.userData.jumpProgress = 0;
             chick3D.userData.startZ = chick3D.position.z;
-            chick3D.userData.targetZ = chick3D.position.z - 1.5; // 一次跳躍 1.5 格，配合橫向斑馬線的間距
+            chick3D.userData.targetZ = chick3D.position.z - 2.0; // 一次跳躍 2.0 格，配合橫向斑馬線的間距
         };
 
         crossing3DContainer.addEventListener('mousedown', (e) => {
