@@ -34,10 +34,10 @@ body {
 }
 
 .game-container {
-    width: 95%;
-    max-width: 550px;
+    width: 98%;
+    max-width: 800px;
     background: white;
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 2.5rem;
     border: 6px solid var(--primary-color);
     box-shadow: 15px 15px 0px var(--shadow-color);
@@ -422,8 +422,8 @@ body {
     border: 4px solid #81c784;
     overflow: hidden;
     cursor: crosshair;
-    flex: 1; /* 讓 3D 畫布自動填滿剩餘高度 */
-    min-height: 350px; /* 最小高度避免太扁 */
+    flex: 1;
+    min-height: 500px; /* 加高畫面 */
     display: flex;
 }
 
@@ -510,21 +510,23 @@ body {
 /* Character Selector */
 .char-selector {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 0.8rem;
+    justify-content: space-between;
+    gap: 0.6rem;
     background: #fdfaf5;
-    padding: 1rem;
-    border-radius: 1.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 1.2rem;
     border: 3px solid #e0d8c0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .char-title {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 800;
     color: #9babb8;
     text-shadow: 1px 1px 0px white;
+    white-space: nowrap;
 }
 
 .char-options {

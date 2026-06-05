@@ -842,10 +842,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 自訂過馬路音效
     const crossingWalkSound = new Audio('Chiikawa.mp3');
     const crossingCrashSound = new Audio('chiikawa-crash.mp3');
+    const chiikawaMissSound = new Audio('miss.mp3');
+    
     const hachiWalkSound = new Audio('hachi.mp3');
     const hachiCrashSound = new Audio('hachi-crash.mp3');
+    const hachiMissSound = new Audio('miss2.mp3');
+    
     const usagiWalkSound = new Audio('usagi.mp3');
     const usagiCrashSound = new Audio('usagi-crash.mp3');
+    const usagiMissSound = new Audio('miss3.mp3');
+    
     const crossingScoreSound = new Audio('score2.mp3');
 
     // 註冊 UI 選擇事件
@@ -866,16 +872,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function playCharSound(char, type) {
         let sound;
         if (char === 'chiikawa') {
-            sound = type === 'walk' ? crossingWalkSound : crossingCrashSound;
+            if (type === 'walk') sound = crossingWalkSound;
+            else if (type === 'crash') sound = crossingCrashSound;
+            else if (type === 'miss') sound = chiikawaMissSound;
         } else if (char === 'hachiware') {
-            sound = type === 'walk' ? hachiWalkSound : hachiCrashSound;
+            if (type === 'walk') sound = hachiWalkSound;
+            else if (type === 'crash') sound = hachiCrashSound;
+            else if (type === 'miss') sound = hachiMissSound;
         } else if (char === 'usagi') {
-            sound = type === 'walk' ? usagiWalkSound : usagiCrashSound;
+            if (type === 'walk') sound = usagiWalkSound;
+            else if (type === 'crash') sound = usagiCrashSound;
+            else if (type === 'miss') sound = usagiMissSound;
         }
+        
         if (sound) {
-            [crossingWalkSound, crossingCrashSound, hachiWalkSound, hachiCrashSound, usagiWalkSound, usagiCrashSound].forEach(s => {
-                if (s) { s.pause(); s.currentTime = 0; }
-            });
+            if (type === 'walk') {
+                [crossingWalkSound, crossingCrashSound, chiikawaMissSound,
+                 hachiWalkSound, hachiCrashSound, hachiMissSound,
+                 usagiWalkSound, usagiCrashSound, usagiMissSound].forEach(s => {
+                    if (s) { s.pause(); s.currentTime = 0; }
+                });
+            }
             sound.play().catch(e => console.log("Audio play blocked:", e));
         }
     }
@@ -894,11 +911,60 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (selectedChar === 'usagi') texPath = 'Usagi.jpg';
         
         const charTex = textureLoader.load(texPath);
-        const bodyMat = new THREE.MeshLambertMaterial({ map: charTex });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), bodyMat);
-        body.castShadow = true;
+        const group = new THREE.Group();
         
-        chick3D.add(body);
+        if (selectedChar === 'chiikawa') {
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: charTex });
+            const body = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), bodyMat);
+            body.castShadow = true;
+            group.add(body);
+            
+            const earMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const earL = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), earMat);
+            earL.position.set(-0.4, 0.5, 0); earL.castShadow = true; group.add(earL);
+            const earR = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), earMat);
+            earR.position.set(0.4, 0.5, 0); earR.castShadow = true; group.add(earR);
+            
+        } else if (selectedChar === 'hachiware') {
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff, map: charTex });
+            const body = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), bodyMat);
+            body.castShadow = true;
+            group.add(body);
+            
+            const earMat = new THREE.MeshLambertMaterial({ color: 0x4a90e2 });
+            const earL = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.4, 16), earMat);
+            earL.position.set(-0.35, 0.6, 0); earL.rotation.z = Math.PI / 8; earL.castShadow = true; group.add(earL);
+            const earR = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.4, 16), earMat);
+            earR.position.set(0.35, 0.6, 0); earR.rotation.z = -Math.PI / 8; earR.castShadow = true; group.add(earR);
+            
+        } else if (selectedChar === 'usagi') {
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffe57f, map: charTex });
+            const body = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), bodyMat);
+            body.castShadow = true;
+            group.add(body);
+            
+            const earMat = new THREE.MeshLambertMaterial({ color: 0xffe57f });
+            // 兔子小長耳朵：用長桃圆柱体 + 上下半球組合
+            function makeRabbitEar(side) {
+                const earGroup = new THREE.Group();
+                const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.55, 12), earMat);
+                shaft.position.y = 0;
+                earGroup.add(shaft);
+                const topCap = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), earMat);
+                topCap.position.y = 0.275;
+                earGroup.add(topCap);
+                const botCap = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), earMat);
+                botCap.position.y = -0.275;
+                earGroup.add(botCap);
+                earGroup.position.set(side * 0.27, 0.9, 0);
+                earGroup.rotation.z = side * -(Math.PI / 14);
+                return earGroup;
+            }
+            group.add(makeRabbitEar(-1));
+            group.add(makeRabbitEar(1));
+        }
+        
+        chick3D.add(group);
         chick3D.position.y = 0.6;
     }
 
@@ -953,21 +1019,38 @@ document.addEventListener('DOMContentLoaded', () => {
             scene.add(chick3D);
             update3DCharacter();
 
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 40), new THREE.MeshLambertMaterial({ color: 0x81c784 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ color: 0x81c784 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
             for(let i=0; i<4; i++) {
-                const road = new THREE.Mesh(new THREE.PlaneGeometry(20, 4), new THREE.MeshLambertMaterial({ color: 0x78909c }));
+                const road = new THREE.Mesh(new THREE.PlaneGeometry(40, 4), new THREE.MeshLambertMaterial({ color: 0x78909c }));
                 road.rotation.x = -Math.PI / 2; road.position.y = 0.01; road.position.z = 0 - (i * 4); scene.add(road);
             }
 
-            // --- 繪製 3D 斑馬線 (Zebra Crossing) ---
-            const stripeGeo = new THREE.PlaneGeometry(0.6, 16); // 橫跨所有車道
+            // --- 繪製 3D 斑馬線 (Zebra Crossing) 改為橫向 ---
+            const stripeGeo = new THREE.PlaneGeometry(8, 0.6); // 寬 8，深 0.6
             const stripeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-            for(let i = -5; i <= 5; i += 2) {
+            for(let z = -0.5; z >= -11.5; z -= 1.5) {
                 const stripe = new THREE.Mesh(stripeGeo, stripeMat);
                 stripe.rotation.x = -Math.PI / 2;
-                stripe.position.set(i * 1.5, 0.02, -6); // 略微高於路面
+                stripe.position.set(0, 0.02, z); // 置中，沿著Z軸排列
                 stripe.receiveShadow = true;
                 scene.add(stripe);
+            }
+
+            // --- 繪製兩側的樹木 ---
+            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const leavesMat = new THREE.MeshLambertMaterial({ color: 0x2e8b57 });
+            function createTree(x, z) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1), trunkMat);
+                trunk.position.y = 0.5; trunk.castShadow = true; tree.add(trunk);
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3, 8), leavesMat);
+                leaves.position.y = 2.0; leaves.castShadow = true; tree.add(leaves);
+                tree.position.set(x, 0, z);
+                scene.add(tree);
+            }
+            for(let i=0; i<25; i++) {
+                createTree(-14 - Math.random() * 6, 4 - Math.random() * 24);
+                createTree(14 + Math.random() * 6, 4 - Math.random() * 24);
             }
 
             // --- 繪製 3D 紅綠燈 (Traffic Light) ---
@@ -1006,19 +1089,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function animate3D() {
         requestAnimationFrame(animate3D);
+        
+        if (chick3D && chick3D.userData && chick3D.userData.isJumping) {
+            chick3D.userData.jumpProgress += 0.15; // 跳躍速度
+            if (chick3D.userData.jumpProgress >= 1) {
+                chick3D.userData.jumpProgress = 1;
+                chick3D.userData.isJumping = false;
+                chick3D.position.z = chick3D.userData.targetZ; // 確保對齊
+                chick3D.position.y = 0.6; // 確保落地
+                
+                // 抵達終點的判斷
+                if (chick3D.position.z <= -14) { 
+                    crossingScore++; 
+                    crossingScoreDisplay.textContent = crossingScore; 
+                    crossingScoreSound.currentTime = 0;
+                    crossingScoreSound.play().catch(e => console.log("Audio play blocked:", e));
+                    chick3D.position.z = 4; 
+                }
+            } else {
+                const p = chick3D.userData.jumpProgress;
+                chick3D.position.z = chick3D.userData.startZ + (chick3D.userData.targetZ - chick3D.userData.startZ) * p;
+                chick3D.position.y = 0.6 + Math.sin(p * Math.PI) * 0.8; // 跳躍高度 0.8
+            }
+        }
+        
         if (crossingActive) {
             cars3D.forEach((car, index) => {
                 // 如果是紅燈，車輛靜止！綠燈/黃燈時車輛才移動
                 if (trafficLightState !== 'red') {
                     car.position.x += car.userData.speed * car.userData.direction;
                 }
-                if (Math.abs(car.position.x) > 12) { scene.remove(car); cars3D.splice(index, 1); }
+                if (Math.abs(car.position.x) > 16) { scene.remove(car); cars3D.splice(index, 1); }
                 if (car.position.distanceTo(chick3D.position) < 1.2) {
                     playCharSound(selectedChar, 'crash');
+                    playCharSound(selectedChar, 'miss');
                     let name = '吉伊卡哇';
                     if (selectedChar === 'hachiware') name = '小八貓';
                     else if (selectedChar === 'usagi') name = '烏薩奇';
-                    stopCrossing3D(); showGameOver('救援失敗！😵', `${name}在馬路上受傷了...`, crossingScore);
+                    stopCrossing3D(false); showGameOver('救援失敗！😵', '哎呀！被車撞到了... 🥺', crossingScore);
                 }
             });
             camera.position.z = chick3D.position.z + 6; camera.lookAt(chick3D.position.x, 0, chick3D.position.z);
@@ -1028,8 +1136,70 @@ document.addEventListener('DOMContentLoaded', () => {
     function spawnCar3D() {
         if (!crossingActive) return;
         const laneIdx = Math.floor(Math.random() * 4); const direction = laneIdx % 2 === 0 ? 1 : -1;
-        const car = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1.5), new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
-        car.position.set(direction === 1 ? -12 : 12, 0.5, 0 - (laneIdx * 4)); car.userData = { speed: Math.random() * 0.1 + 0.1, direction: direction };
+        const laneZ = 0 - (laneIdx * 4);
+        const spawnX = direction === 1 ? -16 : 16;
+        
+        // 檢查這條車道的出生點附近有沒有車，避免重疊
+        const tooClose = cars3D.some(c => 
+            Math.abs(c.position.z - laneZ) < 0.5 && Math.abs(c.position.x - spawnX) < 5
+        );
+        if (tooClose) return;
+        
+        const car = new THREE.Group();
+        const carColor = Math.random() * 0xffffff;
+        const bodyMat = new THREE.MeshLambertMaterial({ color: carColor });
+        
+        // 車身
+        const body = new THREE.Mesh(new THREE.BoxGeometry(2, 0.6, 1.2), bodyMat);
+        body.position.y = 0.3;
+        body.castShadow = true;
+        car.add(body);
+        
+        // 車頂
+        const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 1.0), bodyMat);
+        cabin.position.set(direction === 1 ? -0.2 : 0.2, 0.85, 0);
+        cabin.castShadow = true;
+        car.add(cabin);
+        
+        // 窗戶 (用深色方塊稍微突出一點點當作玻璃)
+        const windowMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+        const windows = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.4, 1.05), windowMat);
+        windows.position.set(direction === 1 ? -0.2 : 0.2, 0.85, 0);
+        car.add(windows);
+        
+        // 車燈 (前後各兩個)
+        const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
+        const taillightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const lightGeo = new THREE.BoxGeometry(0.1, 0.2, 0.3);
+        
+        // 根據行駛方向設定車燈位置
+        const frontX = direction === 1 ? 0.95 : -0.95;
+        const backX = direction === 1 ? -0.95 : 0.95;
+        
+        const hl1 = new THREE.Mesh(lightGeo, headlightMat); hl1.position.set(frontX, 0.3, 0.4); car.add(hl1);
+        const hl2 = new THREE.Mesh(lightGeo, headlightMat); hl2.position.set(frontX, 0.3, -0.4); car.add(hl2);
+        
+        const tl1 = new THREE.Mesh(lightGeo, taillightMat); tl1.position.set(backX, 0.3, 0.4); car.add(tl1);
+        const tl2 = new THREE.Mesh(lightGeo, taillightMat); tl2.position.set(backX, 0.3, -0.4); car.add(tl2);
+        
+        // 輪胎
+        const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+        const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.2, 16);
+        const wheelPositions = [
+            [-0.6, 0.25, 0.65], [0.6, 0.25, 0.65],
+            [-0.6, 0.25, -0.65], [0.6, 0.25, -0.65]
+        ];
+        wheelPositions.forEach(pos => {
+            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+            wheel.rotation.x = Math.PI / 2;
+            wheel.position.set(pos[0], pos[1], pos[2]);
+            wheel.castShadow = true;
+            car.add(wheel);
+        });
+
+        car.position.set(spawnX, 0, laneZ); 
+        car.userData = { speed: Math.random() * 0.1 + 0.1, direction: direction };
+        
         scene.add(car); cars3D.push(car);
     }
     function resetCrossing3D() {
@@ -1047,18 +1217,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (redLight) redLight.material.color.setHex(0x330000);
         if (yellowLight) yellowLight.material.color.setHex(0x333300);
     }
-    function stopCrossing3D() { 
+    function stopCrossing3D(stopCrash = true) { 
         crossingActive = false; 
         clearInterval(crossingTimerId); 
         clearInterval(carSpawnerId); 
         clearTimeout(trafficLightTimerId);
-        [crossingWalkSound, crossingCrashSound, hachiWalkSound, hachiCrashSound, usagiWalkSound, usagiCrashSound].forEach(s => {
+        [crossingWalkSound, hachiWalkSound, usagiWalkSound].forEach(s => {
             if (s) { s.pause(); s.currentTime = 0; }
         });
+        if (stopCrash) {
+            [crossingCrashSound, hachiCrashSound, usagiCrashSound].forEach(s => {
+                if (s) { s.pause(); s.currentTime = 0; }
+            });
+        }
     }
     if (crossingStartBtn) {
         crossingStartBtn.addEventListener('click', () => {
             playSound('start'); resetCrossing3D(); crossingActive = true;
+            crossingStartBtn.textContent = '重新開始 🔄';
             carSpawnerId = setInterval(spawnCar3D, 800);
             
             // 啟動紅綠燈循環計時器
@@ -1072,18 +1248,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (crossing3DContainer) {
         const handleCrossingJump = () => {
-            if (!crossingActive) return; 
+            if (!crossingActive) return;
+            if (chick3D && chick3D.userData && chick3D.userData.isJumping) return; // 避免連跳
+            
+            // 播放角色跳躍音效 (輕快的「嘣！」聲)
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const jumpOsc = audioCtx.createOscillator();
+            const jumpGain = audioCtx.createGain();
+            jumpOsc.connect(jumpGain); jumpGain.connect(audioCtx.destination);
+            jumpOsc.type = 'sine';
+            const now = audioCtx.currentTime;
+            jumpOsc.frequency.setValueAtTime(300, now);
+            jumpOsc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+            jumpOsc.frequency.exponentialRampToValueAtTime(450, now + 0.18);
+            jumpGain.gain.setValueAtTime(0.15, now);
+            jumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            jumpOsc.start(now); jumpOsc.stop(now + 0.22);
             
             playCharSound(selectedChar, 'walk');
             
-            chick3D.position.z -= 1;
-            if (chick3D.position.z < -14) { 
-                crossingScore++; 
-                crossingScoreDisplay.textContent = crossingScore; 
-                crossingScoreSound.currentTime = 0;
-                crossingScoreSound.play().catch(e => console.log("Audio play blocked:", e));
-                chick3D.position.z = 4; 
-            }
+            if (!chick3D.userData) chick3D.userData = {};
+            chick3D.userData.isJumping = true;
+            chick3D.userData.jumpProgress = 0;
+            chick3D.userData.startZ = chick3D.position.z;
+            chick3D.userData.targetZ = chick3D.position.z - 1.5; // 一次跳躍 1.5 格，配合橫向斑馬線的間距
         };
 
         crossing3DContainer.addEventListener('mousedown', (e) => {

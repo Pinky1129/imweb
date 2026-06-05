@@ -48,6 +48,8 @@
         /* 夢幻史萊姆泡泡樣式 (原本那種感覺) */
         .blob {
             position: absolute;
+            top: 0;
+            left: 0;
             transform: translate(-50%, -50%);
             border-radius: 50%;
             user-select: none;
@@ -55,16 +57,17 @@
             box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(3px);
-            transition: transform 0.1s ease-out, opacity 0.2s ease-out;
+            transition: opacity 0.2s ease-out;
             cursor: pointer;
             pointer-events: auto;
+            will-change: transform;
         }
 
         /* 跟隨手部的「物理核心」感應器 */
         #hand-blob {
             font-size: 120px;
-            top: 50%;
-            left: 50%;
+            top: 0;
+            left: 0;
             opacity: 0; /* 偵測到手才顯示 */
             z-index: 50;
             background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
@@ -274,8 +277,8 @@
             'rgba(255, 218, 185, 0.7)'  // 粉橘
         ];
 
-        // 生成 60 個物理引擎泡泡
-        for (let i = 0; i < 60; i++) {
+        // 生成 40 個物理引擎泡泡 (減少數量提升效能)
+        for (let i = 0; i < 40; i++) {
             const size = Math.random() * 60 + 30; // 30px ~ 90px
             const el = document.createElement('div');
             el.className = 'blob';
@@ -365,8 +368,7 @@
             currentHandY += (targetHandY - currentHandY) * 0.7;
 
             // 更新實際渲染的手部位置
-            handBlobEl.style.left = `${currentHandX}px`;
-            handBlobEl.style.top = `${currentHandY}px`;
+            handBlobEl.style.transform = `translate3d(${currentHandX}px, ${currentHandY}px, 0) translate(-50%, -50%)`;
 
             // 計算手部移動速度 (用於「撥動」效果)
             let handVX = currentHandX - (window.prevHandX || currentHandX);
@@ -487,10 +489,7 @@
 
                 let scaleX = 1 + Math.abs(b.vx) * 0.015;
                 let scaleY = 1 + Math.abs(b.vy) * 0.015;
-                b.el.style.transform = `translate(-50%, -50%) scale(${Math.max(0.6, 1/scaleY)}, ${Math.max(0.6, 1/scaleX)})`;
-
-                b.el.style.left = `${b.x}px`;
-                b.el.style.top = `${b.y}px`;
+                b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0) translate(-50%, -50%) scale(${Math.max(0.6, 1/scaleY)}, ${Math.max(0.6, 1/scaleX)})`;
             }
             requestAnimationFrame(updatePhysics);
         }
@@ -574,9 +573,9 @@
 
         hands.setOptions({
             maxNumHands: 1, // 只追蹤一隻手
-            modelComplexity: 1, // 0或1，1比較準確
-            minDetectionConfidence: 0.75,
-            minTrackingConfidence: 0.75
+            modelComplexity: 0, // 改為 0 可大幅提升效能與順暢度
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
         });
 
         hands.onResults(onResults);

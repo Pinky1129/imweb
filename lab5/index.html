@@ -666,6 +666,17 @@
             currentQ = 0; score = 0;
             quizCard.style.display = '';
             resultCard.classList.remove('show');
+            
+            // 隨機打亂題目順序
+            shuffle(QUESTIONS);
+            
+            // 恢復原本的選項順序，確保正確答案在第一個
+            QUESTIONS.forEach(q => {
+                // 如果之前有被打亂過，我們需要確保答案被改回 0 嗎？
+                // 其實每次 F5 重新整理頁面，QUESTIONS 陣列都會重新宣告，所以不需要特別寫還原邏輯。
+                // 這裡只要移除打亂選項的程式碼即可。
+            });
+            
             renderQuestion();
         }
 
