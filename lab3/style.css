@@ -75,20 +75,55 @@ body {
 .game-menu {
     display: grid;
     gap: 1rem;
+    /* default three columns on larger screens */
+    grid-template-columns: repeat(3, 1fr);
 }
+
+@media (max-width: 600px) {
+    .game-menu {
+        /* stack cards on small screens */
+        grid-template-columns: 1fr;
+    }
+    .menu-card {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+  .menu-card {
+    max-width: 90%;
+    padding: 0.5rem;
+  }
+  .menu-card .emoji {
+    font-size: 2rem;
+  }
+  .menu-card h3 {
+    font-size: 1.2rem;
+  }
+}
+
+
 
 .menu-card {
     background: #f8f5f0;
     border: 3px solid #e0d8c0;
     border-radius: 1.5rem;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    justify-content: center;
+    gap: 0.5rem;
     cursor: pointer;
     transition: 0.2s;
-    text-align: left;
+    text-align: center;
     width: 100%;
+    max-width: 350px; /* limit width to keep reasonable square size */
+    margin: 0 auto;   /* center within grid cell */
+    aspect-ratio: 1;
+    box-sizing: border-box;
 }
 
 .menu-card:hover {
@@ -104,6 +139,10 @@ body {
 .menu-card h3 {
     font-size: 1.5rem;
     color: var(--primary-color);
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
 }
 
 .back-link-main {

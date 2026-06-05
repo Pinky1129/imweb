@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 選單點擊音效 ---
     const menuClickSound = new Audio('menu_click.mp3');
-
     menuCards.forEach(card => card.addEventListener('click', () => {
         menuClickSound.currentTime = 0;
         menuClickSound.play();
@@ -83,15 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
         showView(game);
     }));
     lobbyBackBtns.forEach(btn => btn.addEventListener('click', () => {
-        menuClickSound.currentTime = 0;
-        menuClickSound.play();
         showView('lobby');
     }));
     if (modalLobbyBtn) {
         modalLobbyBtn.addEventListener('click', () => {
-            menuClickSound.currentTime = 0;
-            menuClickSound.play();
-            modal.classList.remove('visible'); showView('lobby');
+            modal.classList.remove('visible');
+            showView('lobby');
         });
     }
 
