@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>互動歡迎看板 - 史萊姆手部追蹤</title>
+    <title>互動歡迎看板 -史萊姆泡泡手部追蹤</title>
     <!-- MediaPipe Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -54,8 +61,8 @@
             border-radius: 50%;
             user-select: none;
             opacity: 0.7;
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(3px);
             transition: opacity 0.2s ease-out;
             cursor: pointer;
@@ -68,10 +75,11 @@
             font-size: 120px;
             top: 0;
             left: 0;
-            opacity: 0; /* 偵測到手才顯示 */
+            opacity: 0;
+            /* 偵測到手才顯示 */
             z-index: 50;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
-            border: 2px dashed rgba(255,255,255,0.2);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
         }
@@ -111,7 +119,7 @@
             backdrop-filter: blur(15px);
             border-radius: 30px;
             border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.05);
             transform-style: preserve-3d;
             perspective: 1000px;
             transition: transform 0.1s ease-out;
@@ -180,7 +188,7 @@
             gap: 10px;
             backdrop-filter: blur(10px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         #status-indicator::before {
@@ -205,12 +213,22 @@
         }
 
         @media (max-width: 768px) {
-            .title { font-size: 3rem; }
-            .subtitle { font-size: 1.2rem; }
-            .welcome-container { padding: 2rem; margin: 1rem; }
+            .title {
+                font-size: 3rem;
+            }
+
+            .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .welcome-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
 
@@ -230,7 +248,7 @@
         <h2 class="subtitle">歡迎加入</h2>
         <h1 class="title">二林工商<br>資料處理科</h1>
         <p class="description">
-            揮動你的手掌，看看背景的史萊姆特效！<br>體驗資訊科技與互動藝術的完美結合 ✨
+            🖐️✊☝️👀💭<br>體驗資訊科技與互動藝術的完美結合 ✨
         </p>
     </div>
 
@@ -242,7 +260,7 @@
     <script>
         // 1. 3D Tilt Effect for the card (mouse fallback & aesthetic)
         const card = document.getElementById('tilt-card');
-        
+
         document.addEventListener('mousemove', (e) => {
             const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
             const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
@@ -267,7 +285,7 @@
         const slimeContainer = document.querySelector('.slime-container');
         const handBlobEl = document.getElementById('hand-blob');
         const blobs = [];
-        
+
         // 泡泡顏色庫 (原本那種夢幻感)
         const bubbleColors = [
             'rgba(255, 182, 193, 0.7)', // 粉紅
@@ -284,30 +302,30 @@
             el.className = 'blob';
             el.style.width = `${size}px`;
             el.style.height = `${size}px`;
-            
+
             // 隨機上色
             el.style.background = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
-            
+
             // 【點擊戳破功能】：滑鼠點擊泡泡時移除
-            el.style.pointerEvents = 'auto'; 
+            el.style.pointerEvents = 'auto';
             el.style.cursor = 'pointer';
-            
+
             el.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 playChomp(); // 暫用咬碎音效作為破裂聲
                 if (navigator.vibrate) navigator.vibrate(50);
-                
+
                 // 產生一個簡單的破裂動畫效果
                 el.style.transform = `${el.style.transform} scale(1.5)`;
                 el.style.opacity = '0';
-                
+
                 setTimeout(() => {
                     const index = blobs.findIndex(b => b.el === el);
                     if (index > -1) blobs.splice(index, 1);
                     el.remove();
                 }, 100);
             });
-            
+
             slimeContainer.insertBefore(el, handBlobEl);
 
             blobs.push({
@@ -360,7 +378,7 @@
         let currentHandX = -1000;
         let currentHandY = -1000;
         let handRadius = 60;
-        let isHandOpen = false; 
+        let isHandOpen = false;
         let isHandClosed = false; // 新增：追蹤手是否握拳
 
         function updatePhysics() {
@@ -380,10 +398,10 @@
 
             for (let i = blobs.length - 1; i >= 0; i--) {
                 let b = blobs[i];
-                
+
                 // 加入微弱重力 (讓泡泡有緩緩掉落感，但比較輕盈)
-                b.vy += 0.1; 
-                
+                b.vy += 0.1;
+
                 b.x += b.vx;
                 b.y += b.vy;
 
@@ -391,14 +409,14 @@
                 if (b.x < 0) { b.x = 0; b.vx *= -0.8; }
                 if (b.x > window.innerWidth) { b.x = window.innerWidth; b.vx *= -0.8; }
                 if (b.y < 0) { b.y = 0; b.vy *= -0.8; }
-                if (b.y > window.innerHeight) { 
-                    b.y = window.innerHeight; 
+                if (b.y > window.innerHeight) {
+                    b.y = window.innerHeight;
                     b.vy *= -0.7; // 觸地反彈稍微減速
                     b.vx *= 0.9;  // 在地上的摩擦力
                 }
 
                 // 計算與平滑後手部的距離 (向量)
-                let dx = b.x - currentHandX; 
+                let dx = b.x - currentHandX;
                 let dy = b.y - currentHandY;
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 let minDist = (b.size / 2) + handRadius;
@@ -409,7 +427,7 @@
                     // 將泡泡推到邊界外
                     b.x = currentHandX + Math.cos(angle) * minDist;
                     b.y = currentHandY + Math.sin(angle) * minDist;
-                    
+
                     // 基礎反彈力
                     b.vx += Math.cos(angle) * 0.5;
                     b.vy += Math.sin(angle) * 0.5;
@@ -417,7 +435,7 @@
                     // 【撥動效果】：將手的移動速度傳遞給泡泡
                     b.vx += handVX * 0.5;
                     b.vy += handVY * 0.5;
-                    
+
                     // 碰撞時的阻尼
                     b.vx *= 0.9;
                     b.vy *= 0.9;
@@ -427,22 +445,22 @@
                 // 為了讓「碰」的感覺更明顯，我們調整磁力邏輯
                 let dxPull = currentHandX - b.x;
                 let dyPull = currentHandY - b.y;
-                
-                if (isHandClosed && dist > minDist && dist < 1500) { 
+
+                if (isHandClosed && dist > minDist && dist < 1500) {
                     // 【握拳時】：產生強大引力 (抓取)
-                    let pullForce = 120 / (dist + 50); 
+                    let pullForce = 120 / (dist + 50);
                     b.vx += dxPull * pullForce * 0.02;
                     b.vy += dyPull * pullForce * 0.02;
                 } else if (isHandOpen && dist < 800) {
                     // 當手完全「張開」時，恢復爆炸式散射效果
-                    let scatterForce = (800 - dist) * 0.25; 
-                    
+                    let scatterForce = (800 - dist) * 0.25;
+
                     b.vx -= dxPull * scatterForce * 0.02;
                     b.vy -= dyPull * scatterForce * 0.02;
-                    
+
                     // 核心區域的噴發效果
                     if (dist < 350) {
-                        b.vy -= Math.random() * 10; 
+                        b.vy -= Math.random() * 10;
                         b.vx += (Math.random() - 0.5) * 12;
                     }
                 }
@@ -458,7 +476,7 @@
                     if (dist2 < minDist2 && dist2 > 0) {
                         let angle = Math.atan2(dy2, dx2);
                         let overlap = minDist2 - dist2;
-                        
+
                         // 修正重疊，讓它們分開
                         let moveX = Math.cos(angle) * (overlap / 2);
                         let moveY = Math.sin(angle) * (overlap / 2);
@@ -480,7 +498,7 @@
 
                 // 速度限制與摩擦力 (調高速度上限)
                 let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-                if (speed > 30) { 
+                if (speed > 30) {
                     b.vx *= 0.90;
                     b.vy *= 0.90;
                 } else {
@@ -491,7 +509,7 @@
 
                 let scaleX = 1 + Math.abs(b.vx) * 0.015;
                 let scaleY = 1 + Math.abs(b.vy) * 0.015;
-                b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0) translate(-50%, -50%) scale(${Math.max(0.6, 1/scaleY)}, ${Math.max(0.6, 1/scaleX)})`;
+                b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0) translate(-50%, -50%) scale(${Math.max(0.6, 1 / scaleY)}, ${Math.max(0.6, 1 / scaleX)})`;
             }
             requestAnimationFrame(updatePhysics);
         }
@@ -501,17 +519,17 @@
 
         // 當偵測到手部時的處理函式
         function onResults(results) {
-            if(loadingMsg.style.display !== 'none') {
+            if (loadingMsg.style.display !== 'none') {
                 loadingMsg.style.display = 'none';
             }
 
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 statusIndicator.innerText = '手部偵測中...';
                 statusIndicator.classList.add('active');
-                
+
                 const landmarks = results.multiHandLandmarks[0];
                 const indexFingerTip = landmarks[8]; // 使用食指指尖作為追蹤點
-                
+
                 // 寫入目標座標 (以食指指尖為中心)
                 targetHandX = (1 - indexFingerTip.x) * window.innerWidth;
                 targetHandY = indexFingerTip.y * window.innerHeight;
@@ -531,28 +549,28 @@
                 const pinkyTip = landmarks[20];
 
                 const handSizeRaw = Math.sqrt(
-                    Math.pow(wrist.x - middleFingerTip.x, 2) + 
+                    Math.pow(wrist.x - middleFingerTip.x, 2) +
                     Math.pow(wrist.y - middleFingerTip.y, 2)
                 );
-                
-                const handSize = handSizeRaw * window.innerHeight * 1.5; 
+
+                const handSize = handSizeRaw * window.innerHeight * 1.5;
 
                 // 判斷手是否張大 (大拇指到小拇指的距離是否夠寬)
                 const spreadDist = Math.sqrt(
-                    Math.pow(thumbTip.x - pinkyTip.x, 2) + 
+                    Math.pow(thumbTip.x - pinkyTip.x, 2) +
                     Math.pow(thumbTip.y - pinkyTip.y, 2)
                 );
-                
+
                 // 計算手部狀態比例
                 const spreadRatio = spreadDist / handSizeRaw;
-                
+
                 // 定義三種狀態：
                 isHandOpen = spreadRatio > 1.3;   // 大力張開才散開
                 isHandClosed = spreadRatio < 0.45; // 握拳才吸過來
-                
+
                 // 為了精準操控，我們將食指尖的物理半徑縮小並固定
-                handRadius = 35; 
-                
+                handRadius = 35;
+
                 handBlobEl.style.width = `${handRadius * 2}px`;
                 handBlobEl.style.height = `${handRadius * 2}px`;
 
@@ -569,9 +587,11 @@
         }
 
         // 初始化 Hands 模型
-        const hands = new Hands({locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }});
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
 
         hands.setOptions({
             maxNumHands: 1, // 只追蹤一隻手
@@ -585,7 +605,7 @@
         // 啟動攝影機
         const camera = new Camera(videoElement, {
             onFrame: async () => {
-                await hands.send({image: videoElement});
+                await hands.send({ image: videoElement });
             },
             width: 640,
             height: 480
@@ -599,4 +619,5 @@
 
     </script>
 </body>
+
 </html>
