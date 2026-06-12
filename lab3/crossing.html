@@ -148,7 +148,7 @@
         let currentType = 'chiikawa';
         let isJumping = false;
         // 載入吉伊的音效
-        let chiikawaJumpSound = new Audio('../lab3/chiikawa.mp3');
+        let chiikawaJumpSound = new Audio('../lab3/Chiikawa.mp3');
         chiikawaJumpSound.playbackRate = 1.5;
         let chiikawaCrashSound = new Audio('../lab3/chiikawa-crash.mp3');
         chiikawaCrashSound.playbackRate = 2.0; // 調快到 2 倍速
@@ -509,11 +509,11 @@
 
             // 判斷不同角色的音效
             if (currentType === 'chiikawa') {
-                if (chiikawaJumpSound.paused || chiikawaJumpSound.ended) chiikawaJumpSound.play();
+                if (chiikawaJumpSound.paused || chiikawaJumpSound.ended) chiikawaJumpSound.play().catch(e => console.warn(e));
             } else if (currentType === 'hachiware') {
-                if (hachiJumpSound.paused || hachiJumpSound.ended) hachiJumpSound.play();
+                if (hachiJumpSound.paused || hachiJumpSound.ended) hachiJumpSound.play().catch(e => console.warn(e));
             } else if (currentType === 'usagi') {
-                if (usagiJumpSound.paused || usagiJumpSound.ended) usagiJumpSound.play();
+                if (usagiJumpSound.paused || usagiJumpSound.ended) usagiJumpSound.play().catch(e => console.warn(e));
             } else {
                 playSound('jump');
             }
@@ -585,15 +585,15 @@
                         // 判斷不同角色的被撞音效
                         if (currentType === 'chiikawa') {
                             chiikawaCrashSound.currentTime = 0;
-                            chiikawaCrashSound.play();
+                            chiikawaCrashSound.play().catch(e => console.warn(e));
                         } else if (currentType === 'hachiware') {
                             hachiJumpSound.pause(); // 被撞時立刻停止跳躍音效
                             hachiJumpSound.currentTime = 0;
                             hachiCrashSound.currentTime = 0;
-                            hachiCrashSound.play();
+                            hachiCrashSound.play().catch(e => console.warn(e));
                         } else if (currentType === 'usagi') {
                             usagiCrashSound.currentTime = 0;
-                            usagiCrashSound.play();
+                            usagiCrashSound.play().catch(e => console.warn(e));
                         } else {
                             playSound('crash');
                         }

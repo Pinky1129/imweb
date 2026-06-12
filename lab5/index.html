@@ -10,10 +10,10 @@
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #fff0f5, #e0f7fa);
-            --primary: #8bc34a; /* soft green */
-            --accent: #ffb6c1; /* pastel pink */
-            --accent2: #ffeb3b; /* pastel yellow */
-            --text: #5d4037; /* soft brown text for cute look */
+            --primary: #8bc34a; 
+            --accent: #ffb6c1; 
+            --accent2: #ffeb3b; 
+            --text: #5d4037; 
             --card-border: #ffd1dc;
             --shadow: rgba(255, 182, 193, 0.4);
             --correct: #b2dfdb;
@@ -24,7 +24,7 @@
 
         body {
             font-family: 'Nunito', 'Quicksand', sans-serif;
-            /* Polka dot pattern over the gradient */
+            
             background-color: #fff0f5;
             background-image: 
                 radial-gradient(#ffeb3b 3px, transparent 4px),
@@ -40,7 +40,7 @@
             padding: 2rem 1rem;
             position: relative;
             overflow-x: hidden;
-            /* Magic wand cursor */
+            
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><text y="20" font-size="20">✨</text></svg>'), auto;
         }
 
@@ -51,7 +51,7 @@
             z-index: 10;
         }
 
-        /* ── Header ── */
+        
         .page-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -82,7 +82,7 @@
             margin-top: 0.4rem;
         }
 
-        /* ── Progress ── */
+        
         .progress-wrap {
             background: white;
             border: 3px solid var(--card-border);
@@ -113,7 +113,7 @@
 
         .progress-bar-fill {
             height: 100%;
-            /* Candy stripe pattern */
+            
             background: repeating-linear-gradient(
                 45deg,
                 var(--accent),
@@ -133,7 +133,7 @@
             100% { background-position: 28px 0; }
         }
 
-        /* ── Quiz Card ── */
+        
         .quiz-card {
             background: white;
             border: 6px dashed var(--primary);
@@ -245,7 +245,7 @@
             cursor: default;
         }
 
-        /* ── Feedback ── */
+        
         .feedback {
             margin-top: 1.2rem;
             padding: 0.8rem 1.2rem;
@@ -277,7 +277,7 @@
             border: 2px solid #fca5a5;
         }
 
-        /* ── Next Button ── */
+        
         .next-btn {
             width: 100%;
             margin-top: 1.5rem;
@@ -308,7 +308,7 @@
             40% { transform: scale(1); }
         }
 
-        /* ── Result ── */
+        
         .result-card {
             background: white;
             border: 6px dashed var(--primary);
@@ -380,7 +380,7 @@
             font-weight: 800;
             font-size: 0.95rem;
         }
-        /* ── Floating Background ── */
+        
         .bg-icon {
             position: fixed;
             font-size: 3rem;
@@ -396,7 +396,7 @@
             100% { transform: translateY(0px) rotate(0deg); }
         }
 
-        /* ── Floating Home Button ── */
+        
         .home-btn {
             position: fixed;
             top: 20px;
@@ -433,9 +433,9 @@
 </head>
 
 <body>
-    <!-- Home Button -->
+    
     <a href="../index.html" class="home-btn" title="回首頁">🏠</a>
-    <!-- Background Decor -->
+    
     <div class="bg-icon" style="top: 10%; left: 10%; animation-delay: 0s;">📚</div>
     <div class="bg-icon" style="top: 20%; right: 15%; animation-delay: 1s;">✨</div>
     <div class="bg-icon" style="top: 60%; left: 5%; animation-delay: 2s;">✏️</div>
@@ -457,7 +457,7 @@
         </div>
 
         <div class="quiz-card" id="quiz-card">
-            <span class="question-tag" id="question-tag">【資處科】</span>
+
             <p class="question-text" id="question-text">載入中...</p>
             <div class="options" id="options"></div>
             <div class="feedback" id="feedback"></div>
@@ -548,7 +548,7 @@
 
         let currentQ = 0, score = 0, answered = false;
 
-        const questionTag  = document.getElementById('question-tag');
+
         const questionText = document.getElementById('question-text');
         const optionsEl    = document.getElementById('options');
         const feedbackEl   = document.getElementById('feedback');
@@ -558,7 +558,7 @@
         const quizCard     = document.getElementById('quiz-card');
         const resultCard   = document.getElementById('result-card');
 
-        // Audio
+        
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         function beep(freq, dur, type = 'sine') {
             if (ctx.state === 'suspended') ctx.resume();
@@ -576,7 +576,6 @@
             const q = QUESTIONS[currentQ];
             answered = false;
 
-            questionTag.textContent  = q.tag;
             questionText.textContent = q.q;
 
             optionsEl.innerHTML = '';
@@ -610,10 +609,10 @@
 
             const isCorrect = idx === q.ans;
 
-            // Mark selected
+            
             clickedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
 
-            // Always show the correct one
+            
             btns[q.ans].classList.add('correct');
 
             if (isCorrect) {
@@ -656,7 +655,7 @@
             document.getElementById('result-emoji').textContent = emoji;
             document.getElementById('result-msg').textContent = msg;
 
-            // Confetti-like sparkle
+            
             beep(400, 0.08);
             setTimeout(() => beep(600, 0.08), 100);
             setTimeout(() => beep(800, 0.12), 200);
@@ -667,20 +666,20 @@
             quizCard.style.display = '';
             resultCard.classList.remove('show');
             
-            // 隨機打亂題目順序
+            
             shuffle(QUESTIONS);
             
-            // 恢復原本的選項順序，確保正確答案在第一個
+            
             QUESTIONS.forEach(q => {
-                // 如果之前有被打亂過，我們需要確保答案被改回 0 嗎？
-                // 其實每次 F5 重新整理頁面，QUESTIONS 陣列都會重新宣告，所以不需要特別寫還原邏輯。
-                // 這裡只要移除打亂選項的程式碼即可。
+                const correctOpt = q.opts[q.ans];
+                shuffle(q.opts);
+                q.ans = q.opts.indexOf(correctOpt);
             });
             
             renderQuestion();
         }
 
-        // Shuffle questions each time
+        
         function shuffle(arr) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));

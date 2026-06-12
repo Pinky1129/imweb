@@ -150,3 +150,41 @@ h1 {
         transform: translate(-50%, -120%) scale(1.2) rotate(15deg);
     }
 }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .container { padding: 1.5rem; }
+    h1 { font-size: 2.2rem; margin-bottom: 2rem; }
+    .grid { 
+        grid-template-columns: 1fr; 
+        gap: 3.5rem 0; /* Keep vertical gap enough for the top ears */
+        margin-top: 2rem;
+    }
+    .card {
+        padding: 1.5rem;
+    }
+    .card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+    }
+    .card p {
+        font-size: 0.95rem;
+    }
+    /* Adjust bag handles (ears) for mobile */
+    .card::before { left: 30px; width: 50px; height: 35px; top: -27px; }
+    .card::after { right: 30px; width: 50px; height: 35px; top: -27px; }
+    
+    .peeking-bear {
+        right: 20px;
+        font-size: 4rem;
+    }
+    .bear-message {
+        right: 90px;
+        bottom: 40px;
+        font-size: 0.9rem;
+    }
+}
